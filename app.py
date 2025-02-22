@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from models import db, User, Student, Course, Enrollment, Grade, Payment, Notification
 from seed import seed_db
