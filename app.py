@@ -96,3 +96,12 @@ def enroll_student():
     db.session.add(new_enrollment)
     db.session.commit()
     return jsonify({"message": "Student enrolled successfully"})
+  
+  # M-Pesa Integration Placeholder
+@app.route('/payments/mpesa', methods=['POST'])
+def mpesa_payment():
+    data = request.json
+    return jsonify({"message": "M-Pesa payment successful", "transaction_id": "MPESA123456"}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
