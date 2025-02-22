@@ -19,7 +19,6 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
-    seed_db()
 
 # Admin login
 ADMIN_EMAILS = os.getenv("ADMIN_EMAILS", "admin@example.com").split(',')
