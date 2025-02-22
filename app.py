@@ -19,4 +19,17 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
-    seed_db()
+
+# Admin login
+ADMIN_EMAILS = os.getenv("ADMIN_EMAILS", "admin@example.com").split(',')
+ADMIN_PASSWORDS = os.getenv("ADMIN_PASSWORDS", "password123").split(',')
+
+@app.route('/admin/login', methods=['POST'])
+def admin_login():
+    data = request.json
+    email = data.get("email")
+    password = data.get("password")
+    if email in ADMIN_EMAILS and password in ADMIN_PASSWORDS:
+        token = create_access_token(identity={"email": email, "role": "admin"})
+        return jsonify({"access_token": token}), 200
+    return jsonify({"message": "Invalid admin credentials"}), 401
