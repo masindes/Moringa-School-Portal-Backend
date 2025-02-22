@@ -33,3 +33,12 @@ def admin_login():
         token = create_access_token(identity={"email": email, "role": "admin"})
         return jsonify({"access_token": token}), 200
     return jsonify({"message": "Invalid admin credentials"}), 401
+
+# M-Pesa Integration Placeholder
+@app.route('/payments/mpesa', methods=['POST'])
+def mpesa_payment():
+    data = request.json
+    return jsonify({"message": "M-Pesa payment successful", "transaction_id": "MPESA123456"}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
