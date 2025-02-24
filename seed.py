@@ -1,3 +1,4 @@
+
 from models import db, bcrypt, User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage
 from app import app
 from datetime import datetime
