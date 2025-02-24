@@ -2,7 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from datetime import datetime, timezone
-from sqlalchemy_serializer import SerializerMixin  # Import SerializerMixin
+from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -31,16 +32,26 @@ class Student(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
     phase = db.Column(db.String(50), nullable=False)
-    fee_balance = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
+    total_fee = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
+    amount_paid = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
+    _fee_balance = db.Column("fee_balance", db.Numeric(10, 2), nullable=False, default=0.00)
     status = db.Column(db.String(20), nullable=False, default="active")
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    
+
     user = db.relationship("User", back_populates="student")
     enrollments = db.relationship("Enrollment", back_populates="student")
     payments = db.relationship("Payment", back_populates="student")
-    
-    serialize_rules = ("-user.password_hash", "-user.student")
+
+    serialize_rules = ("-user.password_hash", "-user.student", "-enrollments.student", "-payments.student")
+
+    @property
+    def fee_balance(self):
+        return self.total_fee - self.amount_paid
+
+    @fee_balance.setter
+    def fee_balance(self, value):
+        self._fee_balance = value
 
 class Course(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -52,7 +63,7 @@ class Course(db.Model, SerializerMixin):
 
 class Enrollment(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), unique=True, nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
     enrolled_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
@@ -74,6 +85,8 @@ class Payment(db.Model, SerializerMixin):
     transaction_id = db.Column(db.String(100), unique=True, nullable=False)
     
     student = db.relationship("Student", back_populates="payments")
+    
+    serialize_rules = ("-student",)
 
 class Notification(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -95,3 +108,9 @@ class ChatMessage(db.Model, SerializerMixin):
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
     sent_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+class TokenBlocklist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(36), nullable=False, unique=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
