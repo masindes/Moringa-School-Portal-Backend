@@ -1,67 +1,164 @@
-from models import db, User, Student, Course, Enrollment, Grade, Payment, Notification
-from werkzeug.security import generate_password_hash
 
-def seed_db():
-    # Clear existing data
-    db.session.query(Notification).delete()
-    db.session.query(Payment).delete()
-    db.session.query(Grade).delete()
-    db.session.query(Enrollment).delete()
-    db.session.query(Course).delete()
-    db.session.query(Student).delete()
-    db.session.query(User).delete()
-    db.session.commit()
+from app import app, db
+from models import User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage
+from datetime import datetime
+import random
 
-    # Seed users (students)
-    student1 = User(
-        first_name="John",
-        last_name="Doe",
-        email="john.doe@example.com",
-        password_hash=generate_password_hash("password123"),
-        role="student"
-    )
-    student2 = User(
-        first_name="Jane",
-        last_name="Smith",
-        email="jane.smith@example.com",
-        password_hash=generate_password_hash("password456"),
-        role="student"
-    )
-    db.session.add_all([student1, student2])
-    db.session.commit()
+# Sample data
+user_data = [
+    {"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com", "password": "password", "role": "student"},
+    {"first_name": "Jane", "last_name": "Smith", "email": "jane.smith@example.com", "password": "password", "role": "student"},
+    # Add more sample users as needed
+]
 
-    # Seed students table
-    student1_data = Student(user_id=student1.id, phase="Phase 1", fee_balance=500.00, status="active")
-    student2_data = Student(user_id=student2.id, phase="Phase 2", fee_balance=0.00, status="active")
-    db.session.add_all([student1_data, student2_data])
-    db.session.commit()
+student_data = [
+    {"user_id": 1, "phase": "Phase 1", "fee_balance": 100.00, "status": "active"},
+    {"user_id": 2, "phase": "Phase 2", "fee_balance": 200.00, "status": "active"},
+    # Add more sample students as needed
+]
 
-    # Seed courses
-    course1 = Course(name="Web Development", description="Learn HTML, CSS, JavaScript")
-    course2 = Course(name="Data Science", description="Python, Machine Learning, and AI")
-    db.session.add_all([course1, course2])
-    db.session.commit()
+course_data = [
+    {"name": "Course 1", "description": "Description of Course 1"},
+    {"name": "Course 2", "description": "Description of Course 2"},
+    # Add more sample courses as needed
+]
 
-    # Seed enrollments
-    enrollment1 = Enrollment(student_id=student1_data.id, course_id=course1.id)
-    enrollment2 = Enrollment(student_id=student2_data.id, course_id=course2.id)
-    db.session.add_all([enrollment1, enrollment2])
-    db.session.commit()
+enrollment_data = [
+    {"student_id": 1, "course_id": 1},
+    {"student_id": 2, "course_id": 2},
+    # Add more sample enrollments as needed
+]
 
-    # Seed grades
-    grade1 = Grade(enrollment_id=enrollment1.id, grade="A")
-    grade2 = Grade(enrollment_id=enrollment2.id, grade="B+")
-    db.session.add_all([grade1, grade2])
-    db.session.commit()
+grade_data = [
+    {"enrollment_id": 1, "grade": "A"},
+    {"enrollment_id": 2, "grade": "B"},
+    # Add more sample grades as needed
+]
 
-    # Seed payments
-    payment1 = Payment(student_id=student1_data.id, amount=500.00, payment_method="M-Pesa", transaction_id="MPESA001")
-    db.session.add(payment1)
-    db.session.commit()
+payment_data = [
+    {"student_id": 1, "amount": 100.00, "payment_method": "Credit Card", "transaction_id": "txn_1"},
+    {"student_id": 2, "amount": 200.00, "payment_method": "Credit Card", "transaction_id": "txn_2"},
+    # Add more sample payments as needed
+]
 
-    # Seed notifications
-    notification1 = Notification(user_id=student1.id, message="Your payment has been received.", status="unread")
-    db.session.add(notification1)
-    db.session.commit()
+notification_data = [
+    {"user_id": 1, "message": "You have a new grade."},
+    {"user_id": 2, "message": "Your fee balance has been updated."},
+    # Add more sample notifications as needed
+]
 
-    print("Database seeded successfully!")
+report_data = [
+    {"admin_id": 1, "report_type": "performance", "report_data": {"course": "Course 1", "average_grade": "B+"}},
+    {"admin_id": 1, "report_type": "fees", "report_data": {"total_fees_collected": 300.00}},
+    # Add more sample reports as needed
+]
+
+chat_message_data = [
+    {"sender_id": 1, "receiver_id": 2, "message": "Hello, how are you?"},
+    {"sender_id": 2, "receiver_id": 1, "message": "I'm good, thank you!"},
+    # Add more sample chat messages as needed
+]
+
+def seed_data():
+    with app.app_context():
+        # Create all tables
+        db.create_all()
+
+        # Insert sample users
+        for data in user_data:
+            user = User(
+                first_name=data["first_name"],
+                last_name=data["last_name"],
+                email=data["email"],
+                role=data["role"],
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            user.set_password(data["password"])
+            db.session.add(user)
+        
+        # Insert sample students
+        for data in student_data:
+            student = Student(
+                user_id=data["user_id"],
+                phase=data["phase"],
+                fee_balance=data["fee_balance"],
+                status=data["status"],
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.session.add(student)
+        
+        # Insert sample courses
+        for data in course_data:
+            course = Course(
+                name=data["name"],
+                description=data["description"],
+                created_at=datetime.utcnow()
+            )
+            db.session.add(course)
+        
+        # Insert sample enrollments
+        for data in enrollment_data:
+            enrollment = Enrollment(
+                student_id=data["student_id"],
+                course_id=data["course_id"],
+                enrolled_at=datetime.utcnow()
+            )
+            db.session.add(enrollment)
+        
+        # Insert sample grades
+        for data in grade_data:
+            grade = Grade(
+                enrollment_id=data["enrollment_id"],
+                grade=data["grade"],
+                created_at=datetime.utcnow()
+            )
+            db.session.add(grade)
+        
+        # Insert sample payments
+        for data in payment_data:
+            payment = Payment(
+                student_id=data["student_id"],
+                amount=data["amount"],
+                payment_date=datetime.utcnow(),
+                payment_method=data["payment_method"],
+                transaction_id=data["transaction_id"]
+            )
+            db.session.add(payment)
+        
+        # Insert sample notifications
+        for data in notification_data:
+            notification = Notification(
+                user_id=data["user_id"],
+                message=data["message"],
+                status="unread",
+                created_at=datetime.utcnow()
+            )
+            db.session.add(notification)
+        
+        # Insert sample reports
+        for data in report_data:
+            report = Report(
+                admin_id=data["admin_id"],
+                report_type=data["report_type"],
+                report_data=data["report_data"],
+                created_at=datetime.utcnow()
+            )
+            db.session.add(report)
+        
+        # Insert sample chat messages
+        for data in chat_message_data:
+            chat_message = ChatMessage(
+                sender_id=data["sender_id"],
+                receiver_id=data["receiver_id"],
+                message=data["message"],
+                sent_at=datetime.utcnow()
+            )
+            db.session.add(chat_message)
+        
+        db.session.commit()
+
+if __name__ == "__main__":
+    seed_data()
+    print("Sample data inserted successfully.")

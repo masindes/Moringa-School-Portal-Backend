@@ -1,0 +1,6 @@
+[
+  {
+    "type": "sqlite",
+    "path": "/home/steve/Development/Flask/phase-5/Moringa-School-Portal-Backend/instance/moringa_students.db"
+  }
+]
