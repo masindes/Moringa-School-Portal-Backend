@@ -85,6 +85,26 @@ def logout():
     db.session.commit()
     return jsonify({"message": "Successfully logged out"}), 200
 
+
+# Route to change student password
+@app.route('/students/<int:student_id>/change_password', methods=['PATCH'])
+@jwt_required()
+def change_student_password(student_id):
+    current_user_id = int(get_jwt_identity())
+    student = Student.query.get_or_404(student_id)
+    user = User.query.get(student.user_id)
+    # Ensure only the student can change their password
+    if current_user_id != user.id:
+        return jsonify({"message": "Unauthorized access"}), 403
+    data = request.get_json()
+    if 'new_password' not in data:
+        return jsonify({"message": "New password is required"}), 400
+    # Hash and update the new password
+    user.password_hash = bcrypt.generate_password_hash(data['new_password']).decode('utf-8')
+    db.session.commit()
+    return jsonify({"message": "Password changed successfully"}), 200
+
+
 # Get user info route
 @app.route('/user/<int:user_id>', methods=['GET'])
 @jwt_required()
