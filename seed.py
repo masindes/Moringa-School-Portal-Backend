@@ -3,29 +3,29 @@ from models import User, Student, Course, Enrollment, Grade, Payment, Notificati
 from datetime import datetime
 import random
 
-# Sample data
+
 user_data = [
     {"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com", "password": "password", "role": "student"},
     {"first_name": "Jane", "last_name": "Smith", "email": "jane.smith@example.com", "password": "password", "role": "student"},
-    # Add more sample users as needed
+
 ]
 
 student_data = [
     {"user_id": 1, "phase": "Phase 1", "fee_balance": 100.00, "status": "active"},
     {"user_id": 2, "phase": "Phase 2", "fee_balance": 200.00, "status": "active"},
-    # Add more sample students as needed
+    
 ]
 
 course_data = [
     {"name": "Course 1", "description": "Description of Course 1"},
     {"name": "Course 2", "description": "Description of Course 2"},
-    # Add more sample courses as needed
+
 ]
 
 enrollment_data = [
     {"student_id": 1, "course_id": 1},
     {"student_id": 2, "course_id": 2},
-    # Add more sample enrollments as needed
+
 ]
 
 grade_data = [
