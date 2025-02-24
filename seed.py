@@ -146,6 +146,6 @@ def seed_data():
         
         db.session.commit()
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     seed_data()
     print("Sample data inserted successfully.")
