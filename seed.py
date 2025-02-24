@@ -1,3 +1,4 @@
+
 from app import app, db
 from models import User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage
 from datetime import datetime
