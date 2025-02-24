@@ -31,9 +31,9 @@ def seed_data():
         ]
         db.session.add_all(users)
         db.session.commit()
-        
+
         student1 = Student(
-            user_id=users[1].id,
+            user_id=users[2].id,
             phase="Phase 1",
             total_fee=500.00,
             amount_paid=150.00,
@@ -54,7 +54,7 @@ def seed_data():
 
         enrollment1 = Enrollment(
             student_id=student1.id,
-            course_id=courses[0].id,
+            course_id=courses[1].id,
             enrolled_at=datetime.utcnow()
         )
         db.session.add(enrollment1)
@@ -82,7 +82,7 @@ def seed_data():
 
     
         notification1 = Notification(
-            user_id=users[1].id,
+            user_id=users[2].id,
             message="Welcome to the portal!",
             status="unread",
             created_at=datetime.utcnow()
@@ -92,7 +92,7 @@ def seed_data():
 
 
         report1 = Report(
-            admin_id=users[0].id,
+            admin_id=users[1].id,
             report_type="Attendance",
             report_data={"attendance_percentage": 95},
             created_at=datetime.utcnow()
@@ -102,8 +102,8 @@ def seed_data():
 
 
         chat_message1 = ChatMessage(
-            sender_id=users[0].id,
-            receiver_id=users[1].id,
+            sender_id=users[1].id,
+            receiver_id=users[2].id,
             message="Hello, how can I help you?",
             sent_at=datetime.utcnow()
         )
