@@ -1,67 +1,116 @@
-from models import db, User, Student, Course, Enrollment, Grade, Payment, Notification
-from werkzeug.security import generate_password_hash
+from models import db, bcrypt, User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage
+from app import app
+from datetime import datetime
 
-def seed_db():
-    # Clear existing data
-    db.session.query(Notification).delete()
-    db.session.query(Payment).delete()
-    db.session.query(Grade).delete()
-    db.session.query(Enrollment).delete()
-    db.session.query(Course).delete()
-    db.session.query(Student).delete()
-    db.session.query(User).delete()
-    db.session.commit()
+def seed_data():
+    with app.app_context():
+        
+        db.drop_all()
+        db.create_all()
 
-    # Seed users (students)
-    student1 = User(
-        first_name="John",
-        last_name="Doe",
-        email="john.doe@example.com",
-        password_hash=generate_password_hash("password123"),
-        role="student"
-    )
-    student2 = User(
-        first_name="Jane",
-        last_name="Smith",
-        email="jane.smith@example.com",
-        password_hash=generate_password_hash("password456"),
-        role="student"
-    )
-    db.session.add_all([student1, student2])
-    db.session.commit()
 
-    # Seed students table
-    student1_data = Student(user_id=student1.id, phase="Phase 1", fee_balance=500.00, status="active")
-    student2_data = Student(user_id=student2.id, phase="Phase 2", fee_balance=0.00, status="active")
-    db.session.add_all([student1_data, student2_data])
-    db.session.commit()
+        users = [
+            User(
+                first_name="louis",
+                last_name="ogwal",
+                email="louis@gmail.com",
+                password_hash=bcrypt.generate_password_hash("password").decode('utf-8'),
+                role="admin",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            ),
+            User(
+                first_name="nympha",
+                last_name="nim",
+                email="nim@gmail.com",
+                password_hash=bcrypt.generate_password_hash("password").decode('utf-8'),
+                role="student",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+        ]
+        db.session.add_all(users)
+        db.session.commit()
+        
+        student1 = Student(
+            user_id=users[1].id,
+            phase="Phase 1",
+            total_fee=500.00,
+            amount_paid=150.00,
+            status="active",
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        db.session.add(student1)
+        db.session.commit()
 
-    # Seed courses
-    course1 = Course(name="Web Development", description="Learn HTML, CSS, JavaScript")
-    course2 = Course(name="Data Science", description="Python, Machine Learning, and AI")
-    db.session.add_all([course1, course2])
-    db.session.commit()
+        
+        courses = [
+            Course(name="Mathematics", description="Mathematics Course", created_at=datetime.utcnow()),
+            Course(name="Science", description="Science Course", created_at=datetime.utcnow())
+        ]
+        db.session.add_all(courses)
+        db.session.commit
 
-    # Seed enrollments
-    enrollment1 = Enrollment(student_id=student1_data.id, course_id=course1.id)
-    enrollment2 = Enrollment(student_id=student2_data.id, course_id=course2.id)
-    db.session.add_all([enrollment1, enrollment2])
-    db.session.commit()
+        enrollment1 = Enrollment(
+            student_id=student1.id,
+            course_id=courses[0].id,
+            enrolled_at=datetime.utcnow()
+        )
+        db.session.add(enrollment1)
+        db.session.commit()
 
-    # Seed grades
-    grade1 = Grade(enrollment_id=enrollment1.id, grade="A")
-    grade2 = Grade(enrollment_id=enrollment2.id, grade="B+")
-    db.session.add_all([grade1, grade2])
-    db.session.commit()
+    
+        grade1 = Grade(
+            enrollment_id=enrollment1.id,
+            grade="A",
+            created_at=datetime.utcnow()
+        )
+        db.session.add(grade1)
+        db.session.commit()
 
-    # Seed payments
-    payment1 = Payment(student_id=student1_data.id, amount=500.00, payment_method="M-Pesa", transaction_id="MPESA001")
-    db.session.add(payment1)
-    db.session.commit()
+    
+        payment1 = Payment(
+            student_id=student1.id,
+            amount=150.00,
+            payment_date=datetime.utcnow(),
+            payment_method="Credit Card",
+            transaction_id="TXN12345"
+        )
+        db.session.add(payment1)
+        db.session.commit()
 
-    # Seed notifications
-    notification1 = Notification(user_id=student1.id, message="Your payment has been received.", status="unread")
-    db.session.add(notification1)
-    db.session.commit()
+    
+        notification1 = Notification(
+            user_id=users[1].id,
+            message="Welcome to the portal!",
+            status="unread",
+            created_at=datetime.utcnow()
+        )
+        db.session.add(notification1)
+        db.session.commit()
 
-    print("Database seeded successfully!")
+
+        report1 = Report(
+            admin_id=users[0].id,
+            report_type="Attendance",
+            report_data={"attendance_percentage": 95},
+            created_at=datetime.utcnow()
+        )
+        db.session.add(report1)
+        db.session.commit()
+
+
+        chat_message1 = ChatMessage(
+            sender_id=users[0].id,
+            receiver_id=users[1].id,
+            message="Hello, how can I help you?",
+            sent_at=datetime.utcnow()
+        )
+        db.session.add(chat_message1)
+        db.session.commit()
+
+        print("Database seeded successfully.")
+
+if __name__ == "__main__":
+    seed_data()
