@@ -1,3 +1,4 @@
+
 from app import app, db
 from models import User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage
 from datetime import datetime
@@ -7,62 +8,51 @@ import random
 user_data = [
     {"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com", "password": "password", "role": "student"},
     {"first_name": "Jane", "last_name": "Smith", "email": "jane.smith@example.com", "password": "password", "role": "student"},
-    
 ]
 
 student_data = [
     {"user_id": 1, "phase": "Phase 1", "fee_balance": 100.00, "status": "active"},
     {"user_id": 2, "phase": "Phase 2", "fee_balance": 200.00, "status": "active"},
-    
 ]
 
 course_data = [
     {"name": "Course 1", "description": "Description of Course 1"},
     {"name": "Course 2", "description": "Description of Course 2"},
-    
 ]
 
 enrollment_data = [
     {"student_id": 1, "course_id": 1},
     {"student_id": 2, "course_id": 2},
-    
 ]
 
 grade_data = [
     {"enrollment_id": 1, "grade": "A"},
     {"enrollment_id": 2, "grade": "B"},
-    
 ]
 
 payment_data = [
     {"student_id": 1, "amount": 100.00, "payment_method": "Credit Card", "transaction_id": "txn_1"},
     {"student_id": 2, "amount": 200.00, "payment_method": "Credit Card", "transaction_id": "txn_2"},
-    
 ]
 
 notification_data = [
     {"user_id": 1, "message": "You have a new grade."},
     {"user_id": 2, "message": "Your fee balance has been updated."},
-    
 ]
 
 report_data = [
     {"admin_id": 1, "report_type": "performance", "report_data": {"course": "Course 1", "average_grade": "B+"}},
     {"admin_id": 1, "report_type": "fees", "report_data": {"total_fees_collected": 300.00}},
-
 ]
 
 chat_message_data = [
     {"sender_id": 1, "receiver_id": 2, "message": "Hello, how are you?"},
     {"sender_id": 2, "receiver_id": 1, "message": "I'm good, thank you!"},
-    
 ]
 
 def seed_data():
     with app.app_context():
-        
         db.create_all()
-
     
         for data in user_data:
             user = User(
@@ -76,7 +66,6 @@ def seed_data():
             user.set_password(data["password"])
             db.session.add(user)
         
-        
         for data in student_data:
             student = Student(
                 user_id=data["user_id"],
@@ -87,7 +76,6 @@ def seed_data():
                 updated_at=datetime.utcnow()
             )
             db.session.add(student)
-        
         
         for data in course_data:
             course = Course(
