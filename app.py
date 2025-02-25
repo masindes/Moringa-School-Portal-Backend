@@ -360,8 +360,6 @@ def get_student_details(student_id):
     
     return jsonify(student_details), 200
 
-
-
 # Admin: View all payments
 @app.route('/payments', methods=['GET'])
 @jwt_required()
