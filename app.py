@@ -29,6 +29,13 @@ def admin_required():
     user = User.query.get(user_id)
     if user.role != 'admin':
         return jsonify({"message": "Admin access required"}), 403
+
+#Checks whether the students status is active
+def student_active_required(student_id):
+    student = Student.query.get(student_id)
+    if not student or student.status != 'active':
+        return jsonify({"message": "Your account is inactive"}), 403
+    return None
     
 # Create a callback to check if the token is blacklisted
 @jwt.token_in_blocklist_loader
@@ -215,6 +222,11 @@ def delete_grade(grade_id):
 @app.route('/students/<int:student_id>/grades', methods=['GET'])
 @jwt_required()
 def get_grades(student_id):
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+
     student = Student.query.get_or_404(student_id)
     enrollments = Enrollment.query.filter_by(student_id=student.id).all()
     grades = []
@@ -228,6 +240,12 @@ def get_grades(student_id):
 @app.route('/students/<int:student_id>/fee_balance', methods=['GET'])
 @jwt_required()
 def get_fee_balance(student_id):
+
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+    
     student = Student.query.get_or_404(student_id)
     return jsonify({"fee_balance": student.fee_balance}), 200
 
@@ -235,6 +253,11 @@ def get_fee_balance(student_id):
 @app.route('/students/<int:student_id>/current_phase', methods=['GET'])
 @jwt_required()
 def get_current_phase(student_id):
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+    
     student = Student.query.get_or_404(student_id)
     return jsonify({"current_phase": student.phase}), 200
 
@@ -242,6 +265,11 @@ def get_current_phase(student_id):
 @app.route('/students/<int:student_id>/payments', methods=['POST'])
 @jwt_required()
 def make_payment(student_id):
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+
     data = request.get_json()
     student = Student.query.get_or_404(student_id)
     
