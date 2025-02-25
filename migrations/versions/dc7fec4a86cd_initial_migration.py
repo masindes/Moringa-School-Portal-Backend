@@ -1,8 +1,8 @@
-"""Initial Migrations
+"""Initial migration
 
-Revision ID: ac2b47f62d3c
+Revision ID: dc7fec4a86cd
 Revises: 
-Create Date: 2025-02-22 18:01:24.500007
+Create Date: 2025-02-25 10:06:29.217892
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ac2b47f62d3c'
+revision = 'dc7fec4a86cd'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,6 +33,13 @@ def upgrade():
     sa.Column('report_data', sa.JSON(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('token_blocklist',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('jti', sa.String(length=36), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('jti')
     )
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -69,6 +76,8 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('phase', sa.String(length=50), nullable=False),
+    sa.Column('total_fee', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('amount_paid', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('fee_balance', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -84,8 +93,7 @@ def upgrade():
     sa.Column('enrolled_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['course_id'], ['course.id'], ),
     sa.ForeignKeyConstraint(['student_id'], ['student.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('student_id')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('payment',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -118,6 +126,7 @@ def downgrade():
     op.drop_table('notification')
     op.drop_table('chat_message')
     op.drop_table('user')
+    op.drop_table('token_blocklist')
     op.drop_table('report')
     op.drop_table('course')
     # ### end Alembic commands ###
