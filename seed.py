@@ -1,163 +1,199 @@
-from app import app, db
-from models import User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage
+from models import db, bcrypt, User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage, TokenBlocklist
+from app import app
 from datetime import datetime
-import random
-
-# Sample data
-user_data = [
-    {"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com", "password": "password", "role": "student"},
-    {"first_name": "Jane", "last_name": "Smith", "email": "jane.smith@example.com", "password": "password", "role": "student"},
-    # Add more sample users as needed
-]
-
-student_data = [
-    {"user_id": 1, "phase": "Phase 1", "fee_balance": 100.00, "status": "active"},
-    {"user_id": 2, "phase": "Phase 2", "fee_balance": 200.00, "status": "active"},
-    # Add more sample students as needed
-]
-
-course_data = [
-    {"name": "Course 1", "description": "Description of Course 1"},
-    {"name": "Course 2", "description": "Description of Course 2"},
-    # Add more sample courses as needed
-]
-
-enrollment_data = [
-    {"student_id": 1, "course_id": 1},
-    {"student_id": 2, "course_id": 2},
-    # Add more sample enrollments as needed
-]
-
-grade_data = [
-    {"enrollment_id": 1, "grade": "A"},
-    {"enrollment_id": 2, "grade": "B"},
-    # Add more sample grades as needed
-]
-
-payment_data = [
-    {"student_id": 1, "amount": 100.00, "payment_method": "Credit Card", "transaction_id": "txn_1"},
-    {"student_id": 2, "amount": 200.00, "payment_method": "Credit Card", "transaction_id": "txn_2"},
-    # Add more sample payments as needed
-]
-
-notification_data = [
-    {"user_id": 1, "message": "You have a new grade."},
-    {"user_id": 2, "message": "Your fee balance has been updated."},
-    # Add more sample notifications as needed
-]
-
-report_data = [
-    {"admin_id": 1, "report_type": "performance", "report_data": {"course": "Course 1", "average_grade": "B+"}},
-    {"admin_id": 1, "report_type": "fees", "report_data": {"total_fees_collected": 300.00}},
-    # Add more sample reports as needed
-]
-
-chat_message_data = [
-    {"sender_id": 1, "receiver_id": 2, "message": "Hello, how are you?"},
-    {"sender_id": 2, "receiver_id": 1, "message": "I'm good, thank you!"},
-    # Add more sample chat messages as needed
-]
 
 def seed_data():
     with app.app_context():
+        # Drop all tables
+        db.drop_all()
         # Create all tables
         db.create_all()
+        
+        # Create Users
+        users = [
+            User(
+                first_name="nympha",
+                last_name="pamba",
+                email="nim@gmail.com",
+                password_hash=bcrypt.generate_password_hash("123").decode('utf-8'),
+                role="admin",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            ),
+            User(
+                first_name="lous",
+                last_name="ogwal",
+                email="louis@gmail.com",
+                password_hash=bcrypt.generate_password_hash("123").decode('utf-8'),
+                role="student",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            ),
+            User(
+                first_name="Stephen",
+                last_name="waithumbi",
+                email="stephen@gmail.com",
+                password_hash=bcrypt.generate_password_hash("123").decode('utf-8'),
+                role="student",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+        ]
+        db.session.add_all(users)
+        db.session.commit()
 
-        # Insert sample users
-        for data in user_data:
-            user = User(
-                first_name=data["first_name"],
-                last_name=data["last_name"],
-                email=data["email"],
-                role=data["role"],
+        # Create Students
+        students = [
+            Student(
+                user_id=users[1].id,
+                phase="Phase 1",
+                total_fee=500.00,
+                amount_paid=150.00,
+                status="active",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            ),
+            Student(
+                user_id=users[2].id,
+                phase="Phase 2",
+                total_fee=600.00,
+                amount_paid=300.00,
+                status="active",
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
-            user.set_password(data["password"])
-            db.session.add(user)
-        
-        # Insert sample students
-        for data in student_data:
-            student = Student(
-                user_id=data["user_id"],
-                phase=data["phase"],
-                fee_balance=data["fee_balance"],
-                status=data["status"],
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
-            )
-            db.session.add(student)
-        
-        # Insert sample courses
-        for data in course_data:
-            course = Course(
-                name=data["name"],
-                description=data["description"],
+        ]
+        db.session.add_all(students)
+        db.session.commit()
+
+        # Create Courses
+        courses = [
+            Course(
+                name="Mathematics",
+                description="Mathematics Course",
+                created_at=datetime.utcnow()
+            ),
+            Course(
+                name="Science",
+                description="Science Course",
+                created_at=datetime.utcnow()
+            ),
+            Course(
+                name="History",
+                description="History Course",
                 created_at=datetime.utcnow()
             )
-            db.session.add(course)
-        
-        # Insert sample enrollments
-        for data in enrollment_data:
-            enrollment = Enrollment(
-                student_id=data["student_id"],
-                course_id=data["course_id"],
+        ]
+        db.session.add_all(courses)
+        db.session.commit()
+
+        # Create Enrollments
+        enrollments = [
+            Enrollment(
+                student_id=students[0].id,
+                course_id=courses[0].id,
+                enrolled_at=datetime.utcnow()
+            ),
+            Enrollment(
+                student_id=students[1].id,
+                course_id=courses[1].id,
                 enrolled_at=datetime.utcnow()
             )
-            db.session.add(enrollment)
-        
-        # Insert sample grades
-        for data in grade_data:
-            grade = Grade(
-                enrollment_id=data["enrollment_id"],
-                grade=data["grade"],
+        ]
+        db.session.add_all(enrollments)
+        db.session.commit()
+
+        # Create Grades
+        grades = [
+            Grade(
+                enrollment_id=enrollments[0].id,
+                grade="A",
+                created_at=datetime.utcnow()
+            ),
+            Grade(
+                enrollment_id=enrollments[1].id,
+                grade="B",
                 created_at=datetime.utcnow()
             )
-            db.session.add(grade)
-        
-        # Insert sample payments
-        for data in payment_data:
-            payment = Payment(
-                student_id=data["student_id"],
-                amount=data["amount"],
+        ]
+        db.session.add_all(grades)
+        db.session.commit()
+
+        # Create Payments
+        payments = [
+            Payment(
+                student_id=students[0].id,
+                amount=150.00,
                 payment_date=datetime.utcnow(),
-                payment_method=data["payment_method"],
-                transaction_id=data["transaction_id"]
+                payment_method="Credit Card",
+                transaction_id="TXN12345"
+            ),
+            Payment(
+                student_id=students[1].id,
+                amount=300.00,
+                payment_date=datetime.utcnow(),
+                payment_method="Debit Card",
+                transaction_id="TXN12346"
             )
-            db.session.add(payment)
-        
-        # Insert sample notifications
-        for data in notification_data:
-            notification = Notification(
-                user_id=data["user_id"],
-                message=data["message"],
+        ]
+        db.session.add_all(payments)
+        db.session.commit()
+
+        # Create Notifications
+        notifications = [
+            Notification(
+                user_id=users[1].id,
+                message="Welcome to the portal!",
+                status="unread",
+                created_at=datetime.utcnow()
+            ),
+            Notification(
+                user_id=users[2].id,
+                message="Fee payment reminder.",
                 status="unread",
                 created_at=datetime.utcnow()
             )
-            db.session.add(notification)
-        
-        # Insert sample reports
-        for data in report_data:
-            report = Report(
-                admin_id=data["admin_id"],
-                report_type=data["report_type"],
-                report_data=data["report_data"],
-                created_at=datetime.utcnow()
-            )
-            db.session.add(report)
-        
-        # Insert sample chat messages
-        for data in chat_message_data:
-            chat_message = ChatMessage(
-                sender_id=data["sender_id"],
-                receiver_id=data["receiver_id"],
-                message=data["message"],
-                sent_at=datetime.utcnow()
-            )
-            db.session.add(chat_message)
-        
+        ]
+        db.session.add_all(notifications)
         db.session.commit()
 
-if __name__ == "__main__":
+        # Create Reports
+        reports = [
+            Report(
+                admin_id=users[0].id,
+                report_type="Attendance",
+                report_data={"attendance_percentage": 95},
+                created_at=datetime.utcnow()
+            ),
+            Report(
+                admin_id=users[0].id,
+                report_type="Performance",
+                report_data={"average_grade": "B"},
+                created_at=datetime.utcnow()
+            )
+        ]
+        db.session.add_all(reports)
+        db.session.commit()
+
+        # Create ChatMessages
+        chat_messages = [
+            ChatMessage(
+                sender_id=users[0].id,
+                receiver_id=users[1].id,
+                message="Hello, how can I help you?",
+                sent_at=datetime.utcnow()
+            ),
+            ChatMessage(
+                sender_id=users[1].id,
+                receiver_id=users[0].id,
+                message="I need help with my grades.",
+                sent_at=datetime.utcnow()
+            )
+        ]
+        db.session.add_all(chat_messages)
+        db.session.commit()
+
+        print("Database seeded successfully.")
+
+if __name__ == '__main__':
     seed_data()
-    print("Sample data inserted successfully.")
