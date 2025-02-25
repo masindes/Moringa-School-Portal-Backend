@@ -18,6 +18,7 @@ marshmallow-sqlalchemy = "*"
 stripe = "*"
 requests = "*"
 
+
 [dev-packages]
 
 [requires]
