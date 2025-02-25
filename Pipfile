@@ -11,13 +11,12 @@ python-dotenv = "*"
 psycopg = "*"
 flask-cors = "*"
 flask-sqlalchemy = "*"
-flask-migrate = "*"
 flask-bcrypt = "*"
 marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 stripe = "*"
 requests = "*"
-
+flask-migrate = "*"
 
 [dev-packages]
 
