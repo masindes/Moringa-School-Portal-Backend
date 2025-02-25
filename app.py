@@ -1,3 +1,4 @@
+app.py 
 
 from flask import Flask, request, jsonify, make_response
 from flask_migrate import Migrate
@@ -29,6 +30,13 @@ def admin_required():
     user = User.query.get(user_id)
     if user.role != 'admin':
         return jsonify({"message": "Admin access required"}), 403
+
+#Checks whether the students status is active
+def student_active_required(student_id):
+    student = Student.query.get(student_id)
+    if not student or student.status != 'active':
+        return jsonify({"message": "Your account is inactive"}), 403
+    return None
     
 # Create a callback to check if the token is blacklisted
 @jwt.token_in_blocklist_loader
@@ -39,7 +47,7 @@ def check_if_token_in_blocklist(jwt_header, jwt_payload):
 
 @app.route('/')
 def home():
-    return {"message": "Hello, Moringa Students Portal!"}
+    return {"message": "Hello, Welcome Moringa Students Portal!"}
 
 # User registration route
 @app.route('/register', methods=['POST'])
@@ -111,7 +119,20 @@ def change_student_password(student_id):
 def get_user(user_id):
     current_user_id = int(get_jwt_identity())
     user = User.query.get_or_404(user_id)
-    return jsonify(user.to_dict()), 200
+    
+    # Manually serialize the user data
+    user_data = {
+        "id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "role": user.role,
+        "created_at": user.created_at.isoformat(),
+        "updated_at": user.updated_at.isoformat()
+    }
+    
+    return jsonify(user_data), 200
+
 
 # Admin: Add a new student
 @app.route('/students', methods=['POST'])
@@ -179,7 +200,21 @@ def deactivate_student(student_id):
     student = Student.query.get_or_404(student_id)
     student.status = 'inactive'
     db.session.commit()
-    return jsonify({"message": "Student deactivated successfully", "student": student.to_dict()}), 200
+    
+    # Manually serialize the student data
+    student_data = {
+        "id": student.id,
+        "user_id": student.user_id,
+        "phase": student.phase,
+        "total_fee": float(student.total_fee),
+        "amount_paid": float(student.amount_paid),
+        "fee_balance": student.fee_balance,
+        "status": student.status,
+        "created_at": student.created_at.isoformat(),
+        "updated_at": student.updated_at.isoformat(),
+    }
+    
+    return jsonify({"message": "Student deactivated successfully", "student": student_data}), 200
 
 # Create a new grade for a student enrollment
 @app.route('/enrollments/<int:enrollment_id>/grades', methods=['POST'])
@@ -235,6 +270,11 @@ def delete_grade(grade_id):
 @app.route('/students/<int:student_id>/grades', methods=['GET'])
 @jwt_required()
 def get_grades(student_id):
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+
     student = Student.query.get_or_404(student_id)
     enrollments = Enrollment.query.filter_by(student_id=student.id).all()
     grades = []
@@ -248,6 +288,12 @@ def get_grades(student_id):
 @app.route('/students/<int:student_id>/fee_balance', methods=['GET'])
 @jwt_required()
 def get_fee_balance(student_id):
+
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+    
     student = Student.query.get_or_404(student_id)
     return jsonify({"fee_balance": student.fee_balance}), 200
 
@@ -255,6 +301,11 @@ def get_fee_balance(student_id):
 @app.route('/students/<int:student_id>/current_phase', methods=['GET'])
 @jwt_required()
 def get_current_phase(student_id):
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+    
     student = Student.query.get_or_404(student_id)
     return jsonify({"current_phase": student.phase}), 200
 
@@ -262,6 +313,11 @@ def get_current_phase(student_id):
 @app.route('/students/<int:student_id>/payments', methods=['POST'])
 @jwt_required()
 def make_payment(student_id):
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+
     data = request.get_json()
     student = Student.query.get_or_404(student_id)
     
@@ -281,6 +337,51 @@ def make_payment(student_id):
     db.session.commit()
     
     return jsonify({"message": "Payment made successfully", "payment": new_payment.to_dict()}), 201
+
+
+    # Student: Get all details
+@app.route('/students/<int:student_id>', methods=['GET'])
+@jwt_required()
+def get_student_details(student_id):
+    # Check if student account is active
+    active_check = student_active_required(student_id)
+    if active_check:
+        return active_check
+    
+    student = Student.query.get_or_404(student_id)
+    user = student.user
+    enrollments = Enrollment.query.filter_by(student_id=student.id).all()
+    grades = []
+    for enrollment in enrollments:
+        grade = Grade.query.filter_by(enrollment_id=enrollment.id).first()
+        if grade:
+            grades.append({
+                "course": enrollment.course.name,
+                "grade": grade.grade,
+                "enrolled_at": enrollment.enrolled_at.isoformat()
+            })
+    payments = Payment.query.filter_by(student_id=student.id).all()
+    payment_list = [payment.to_dict() for payment in payments]
+
+    # Collect all details
+    student_details = {
+        "student_id": student.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "phase": student.phase,
+        "total_fee": student.total_fee,
+        "amount_paid": student.amount_paid,
+        "fee_balance": student.fee_balance,
+        "status": student.status,
+        "created_at": student.created_at.isoformat(),
+        "updated_at": student.updated_at.isoformat(),
+        "grades": grades,
+        "payments": payment_list
+    }
+    
+    return jsonify(student_details), 200
+
 
 
 # Admin: View all payments
