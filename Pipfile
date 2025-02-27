@@ -17,7 +17,6 @@ marshmallow-sqlalchemy = "*"
 stripe = "*"
 requests = "*"
 flask-migrate = "*"
-flask-mail = "*"
 python-dotenv = "*"
 sqlalchemy-serializer = "*"
 
