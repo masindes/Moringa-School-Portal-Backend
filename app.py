@@ -19,7 +19,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///moringa_students.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KE")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
