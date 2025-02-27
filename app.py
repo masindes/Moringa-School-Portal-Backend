@@ -137,8 +137,8 @@ def register():
         last_name=data['last_name'],
         email=data['email'],
         role=data['role'],
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        created_at = datetime.utcnow(),
+        updated_at = datetime.utcnow()
     )
     new_user.set_password(data['password'])
     db.session.add(new_user)
@@ -222,8 +222,8 @@ def add_student():
         phase=data['phase'],
         fee_balance=data['fee_balance'],
         status=data['status'],
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        created_at = datetime.utcnow(),
+        updated_at = datetime.utcnow()
     )
     db.session.add(new_student)
     db.session.commit()
@@ -302,7 +302,7 @@ def add_grade(enrollment_id):
     new_grade = Grade(
         enrollment_id=enrollment_id,
         grade=data['grade'],
-        created_at=datetime.utcnow()
+        created_at = datetime.utcnow()
     )
     db.session.add(new_grade)
     db.session.commit()
@@ -398,7 +398,7 @@ def make_payment(student_id):
     new_payment = Payment(
         student_id=student_id,
         amount=data['amount'],
-        payment_date=datetime.utcnow(),
+        payment_date = datetime.utcnow(),
         payment_method=data['payment_method'],
         transaction_id=data['transaction_id']
     )
