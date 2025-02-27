@@ -4,6 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+<<<<<<< HEAD
+flask-mail = "*"
+=======
 flask = "*"
 flask-jwt-extended = "*"
 werkzeug = "*"
@@ -19,6 +22,7 @@ flask-migrate = "*"
 flask-mail = "*"
 python-dotenv = "*"
 sqlalchemy-serializer = "*"
+>>>>>>> fc86bdedd4e2fb6be9fcc72d66d37fcaeedb4f40
 
 [dev-packages]
 

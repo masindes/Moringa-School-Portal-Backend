@@ -127,11 +127,14 @@ def register():
     if existing_user:
         return jsonify({"message": "Email already exists"}), 400
 
+    # Set default role to "student" if not provided
+    role = data.get('role', 'student')
+
     new_user = User(
         first_name=data['first_name'],
         last_name=data['last_name'],
         email=data['email'],
-        role=data['role'],
+        role=role,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
@@ -139,6 +142,7 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201
+
 
 # User login route
 @app.route('/login', methods=['POST'])
@@ -212,17 +216,40 @@ def add_student():
         return admin_check
 
     data = request.get_json()
-    new_student = Student(
-        user_id=data['user_id'],
-        phase=data['phase'],
-        fee_balance=data['fee_balance'],
-        status=data['status'],
+
+    # Check if the email already exists
+    existing_user = User.query.filter_by(email=data['email']).first()
+    if existing_user:
+        return jsonify({"message": "Email already exists"}), 400
+
+    # Create a new user
+    new_user = User(
+        first_name=data['first_name'],
+        last_name=data['last_name'],
+        email=data['email'],
+        role='student',
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
+    new_user.set_password(data['password'])
+    
+    # Create a new student
+    new_student = Student(
+        user=new_user,
+        phase=data['phase'],
+        total_fee=data.get('total_fee', 0.00),
+        amount_paid=data.get('amount_paid', 0.00),
+        fee_balance=data.get('fee_balance', 0.00),
+        status=data.get('status', 'active'),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    db.session.add(new_user)
     db.session.add(new_student)
     db.session.commit()
+    
     return jsonify({"message": "Student added successfully", "student": new_student.to_dict()}), 201
+
 
 # Admin: Update student details
 @app.route('/students/<int:student_id>', methods=['PATCH'])
@@ -235,14 +262,51 @@ def update_student(student_id):
 
     student = Student.query.get_or_404(student_id)
     data = request.get_json()
+
+    # Update student details
+    if 'first_name' in data:
+        student.user.first_name = data['first_name']
+    if 'last_name' in data:
+        student.user.last_name = data['last_name']
+    if 'email' in data:
+        student.user.email = data['email']
     if 'phase' in data:
         student.phase = data['phase']
-    if 'fee_balance' in data:
-        student.fee_balance = data['fee_balance']
     if 'status' in data:
         student.status = data['status']
     db.session.commit()
-    return jsonify({"message": "Student updated successfully", "student": student.to_dict()}), 200
+
+    # Update grade if provided
+    if 'grade' in data:
+        enrollment_id = data.get('enrollment_id')  # Ensure enrollment_id is provided
+        if enrollment_id:
+            grade = Grade.query.filter_by(enrollment_id=enrollment_id).first()
+            if grade:
+                grade.grade = data['grade']
+                db.session.commit()
+            else:
+                return jsonify({"message": "Enrollment not found for the provided grade update"}), 404
+        else:
+            return jsonify({"message": "Enrollment ID is required to update the grade"}), 400
+
+    # Manually serialize student data
+    student_data = {
+        "id": student.id,
+        "user_id": student.user_id,
+        "first_name": student.user.first_name,
+        "last_name": student.user.last_name,
+        "email": student.user.email,
+        "phase": student.phase,
+        "total_fee": float(student.total_fee),
+        "amount_paid": float(student.amount_paid),
+        "fee_balance": student.fee_balance,
+        "status": student.status,
+        "created_at": student.created_at.isoformat(),
+        "updated_at": student.updated_at.isoformat(),
+    }
+
+    return jsonify({"message": "Student updated successfully", "student": student_data}), 200
+
 
 # Admin: View all students
 @app.route('/students', methods=['GET'])
@@ -254,7 +318,27 @@ def get_students():
         return admin_check
     
     students = Student.query.all()
-    return jsonify([student.to_dict() for student in students]), 200
+
+    # Manually serialize the student data
+    serialized_students = []
+    for student in students:
+        student_data = {
+            "id": student.id,
+            "user_id": student.user_id,
+            "first_name": student.user.first_name,
+            "last_name": student.user.last_name,
+            "email": student.user.email,
+            "phase": student.phase,
+            "total_fee": float(student.total_fee),
+            "amount_paid": float(student.amount_paid),
+            "fee_balance": student.fee_balance,
+            "status": student.status,
+            "created_at": student.created_at.isoformat(),
+            "updated_at": student.updated_at.isoformat(),
+        }
+        serialized_students.append(student_data)
+
+    return jsonify(serialized_students), 200
 
 # Admin: Deactivate student account
 @app.route('/students/<int:student_id>/deactivate', methods=['PATCH'])
@@ -270,16 +354,8 @@ def deactivate_student(student_id):
     db.session.commit()
     
     # Manually serialize the student data
-    student_data = {
-        "id": student.id,
-        "user_id": student.user_id,
-        "phase": student.phase,
-        "total_fee": float(student.total_fee),
-        "amount_paid": float(student.amount_paid),
-        "fee_balance": student.fee_balance,
-        "status": student.status,
-        "created_at": student.created_at.isoformat(),
-        "updated_at": student.updated_at.isoformat(),
+    student_data = {        
+        "status": student.status,        
     }
     
     return jsonify({"message": "Student deactivated successfully", "student": student_data}), 200
@@ -332,6 +408,21 @@ def delete_grade(grade_id):
     db.session.delete(grade)
     db.session.commit()
     return jsonify({"message": "Grade deleted successfully"}), 200
+
+# Admin: Delete student
+@app.route('/students/<int:student_id>', methods=['DELETE'])
+@jwt_required()
+def delete_student(student_id):
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+
+    student = Student.query.get_or_404(student_id)   
+    db.session.delete(student)
+    db.session.commit()
+    
+    return jsonify({"message": "Student deleted successfully"}), 200
 
 
 # Student: Get grades
@@ -449,8 +540,6 @@ def get_student_details(student_id):
     }
     
     return jsonify(student_details), 200
-
-
 
 # Admin: View all payments
 @app.route('/payments', methods=['GET'])
