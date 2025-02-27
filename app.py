@@ -1,5 +1,3 @@
-app.py 
-
 from flask import Flask, request, jsonify, make_response
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -8,7 +6,10 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt, decode_token
 from models import db, bcrypt, User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage, TokenBlocklist
 from datetime import datetime
-from password_reset import password_reset_bp, mail
+import requests
+import datetime
+import base64
+from requests.auth import HTTPBasicAuth
 
 app = Flask(__name__)
 
@@ -17,25 +18,79 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///moringa_students.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "03a0eae755348efcd38aa36594fa75c40da931ea19823351e88f893c4337cf48"
 app.config["JWT_SECRET_KEY"] = "0399c5c9f2b940c607e7f11c9f86de41bcf59ec6fdfe1c51f5d87abfaf0a2664"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600 
 
-# Mail Configuration
-app.config["MAIL_SERVER"] = 'smtp.gmail.com'  # Gmail SMTP server
-app.config["MAIL_PORT"] = 587
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USE_SSL"] = False
-app.config["MAIL_USERNAME"] = 'stephenwaithumbi10@gmail.com'
-app.config["MAIL_PASSWORD"] = 'W@k10mE10'
+
+# M-Pesa API credentials
+CONSUMER_KEY = "RgXJq5gNAcVfObTMmXVAvOIcV28bsvCh3dqUVJuG7pSzAR0x"
+CONSUMER_SECRET = "npzeXWjsTqPVcQoeGGmGUvBPUxG4lZiyHGYaGJ94yseYOgwrAn9gSemZ4RKKJqGa"
+SHORTCODE = "174379"
+PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+CALLBACK_URL = "https://yourdomain.com/callback"
 
 CORS(app)
 bcrypt.init_app(app)
 db.init_app(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
-mail.init_app(app)
 
+# Generate M-Pesa access token
+def generate_access_token():
+    url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+    response = requests.get(url, auth=HTTPBasicAuth(CONSUMER_KEY, CONSUMER_SECRET))
+    return response.json().get("access_token")
 
-app.register_blueprint(password_reset_bp)
+# Generate Lipa Na M-Pesa password
+def generate_password():
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    data_to_encode = SHORTCODE + PASSKEY + timestamp
+    encoded_password = base64.b64encode(data_to_encode.encode()).decode()
+    return encoded_password, timestamp
+
+# Initiate STK Push
+def stk_push(phone_number, amount, account_reference, transaction_desc):
+    access_token = generate_access_token()
+    url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+    password, timestamp = generate_password()
+    headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+    payload = {
+        "BusinessShortCode": SHORTCODE,
+        "Password": password,
+        "Timestamp": timestamp,
+        "TransactionType": "CustomerPayBillOnline",
+        "Amount": amount,
+        "PartyA": phone_number,
+        "PartyB": SHORTCODE,
+        "PhoneNumber": phone_number,
+        "CallBackURL": CALLBACK_URL,
+        "AccountReference": account_reference,
+        "TransactionDesc": transaction_desc
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    return response.json()
+
+# Payment route
+@app.route("/mpesa/payment", methods=["POST"])
+def initiate_payment():
+    data = request.json
+    phone_number = data.get("phone_number")
+    amount = data.get("amount")
+    account_reference = "MoringaPortal"
+    transaction_desc = "Student Payment"
+    
+    if not phone_number or not amount:
+        return jsonify({"error": "Phone number and amount are required"}), 400
+    
+    response = stk_push(phone_number, amount, account_reference, transaction_desc)
+    return jsonify(response)
+
+# Callback route
+@app.route("/mpesa/callback", methods=["POST"])
+def mpesa_callback():
+    data = request.json
+    print("M-Pesa Callback Data:", data)
+    return jsonify({"message": "Callback received"}), 200
+
 
 # check if the current user is an admin
 def admin_required():
