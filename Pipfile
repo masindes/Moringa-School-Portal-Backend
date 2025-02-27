@@ -19,6 +19,7 @@ requests = "*"
 flask-migrate = "*"
 python-dotenv = "*"
 sqlalchemy-serializer = "*"
+gunicorn = "*"
 
 [dev-packages]
 
