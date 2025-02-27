@@ -17,8 +17,8 @@ class User(db.Model, SerializerMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), nullable=False, default="student")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow(), nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=True)
     password_reset_otp = db.Column(db.String(6), nullable=True)
     password_reset_otp_expiry = db.Column(db.DateTime, nullable=True)
     
