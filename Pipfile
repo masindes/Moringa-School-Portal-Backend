@@ -7,7 +7,6 @@ name = "pypi"
 flask = "*"
 flask-jwt-extended = "*"
 werkzeug = "*"
-python-dotenv = "*"
 psycopg = "*"
 flask-cors = "*"
 flask-sqlalchemy = "*"
@@ -17,6 +16,9 @@ marshmallow-sqlalchemy = "*"
 stripe = "*"
 requests = "*"
 flask-migrate = "*"
+flask-mail = "*"
+python-dotenv = "*"
+sqlalchemy-serializer = "*"
 
 [dev-packages]
 

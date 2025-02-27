@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 5564a518a996
+Revision ID: 373888bd7254
 Revises: 
-Create Date: 2025-02-24 17:39:43.711510
+Create Date: 2025-02-25 14:52:18.364545
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5564a518a996'
+revision = '373888bd7254'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -76,6 +76,8 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('phase', sa.String(length=50), nullable=False),
+    sa.Column('total_fee', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('amount_paid', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('fee_balance', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -91,8 +93,7 @@ def upgrade():
     sa.Column('enrolled_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['course_id'], ['course.id'], ),
     sa.ForeignKeyConstraint(['student_id'], ['student.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('student_id')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('payment',
     sa.Column('id', sa.Integer(), nullable=False),
