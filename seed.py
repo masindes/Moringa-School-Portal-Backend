@@ -197,7 +197,4 @@ def seed_data():
 
 if __name__ == '__main__':
     seed_data()
-<<<<<<< HEAD
-=======
     print("Sample data inserted successfully.")
->>>>>>> fc86bdedd4e2fb6be9fcc72d66d37fcaeedb4f40
