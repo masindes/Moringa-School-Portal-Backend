@@ -62,6 +62,11 @@ def to_dict(self):
 def generate_otp(length=6):
     return ''.join(random.choices(string.digits, k=length))
 
+def send_otp_email(email, otp, mail):
+    msg = Message('Your OTP for Verification', sender='your_email@gmail.com', recipients=[email])
+    msg.body = f'Your OTP is: {otp}'
+    mail.send(msg)
+
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt = JWTManager()
