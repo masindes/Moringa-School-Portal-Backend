@@ -24,7 +24,7 @@ class User(db.Model, SerializerMixin):
     password_reset_otp = db.Column(db.String(6), nullable=True)
     password_reset_otp_expiry = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
-    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     
     student = db.relationship("Student", back_populates="user", uselist=False, cascade="all, delete-orphan")
     serialize_rules = ("-password_hash", "-student.user", "-student")
