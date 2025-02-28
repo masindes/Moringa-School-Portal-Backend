@@ -27,11 +27,11 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600
 
 
 # M-Pesa API credentials
-CONSUMER_KEY = os.getenv("CONSUMER_KEY")
-CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
+CONSUMER_KEY = "RgXJq5gNAcVfObTMmXVAvOIcV28bsvCh3dqUVJuG7pSzAR0x"
+CONSUMER_SECRET = "npzeXWjsTqPVcQoeGGmGUvBPUxG4lZiyHGYaGJ94yseYOgwrAn9gSemZ4RKKJqGa"
 SHORTCODE = "174379"
-PASSKEY = os.getenv("PASSKEY")
-CALLBACK_URL = os.getenv("CALLBACK_URL")
+PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+CALLBACK_URL = "https://moringa-school-portal-backend.onrender.com"
 
 CORS(app)
 bcrypt.init_app(app)
