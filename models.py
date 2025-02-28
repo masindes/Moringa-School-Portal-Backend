@@ -43,8 +43,8 @@ class Student(db.Model, SerializerMixin):
     amount_paid = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     _fee_balance = db.Column("fee_balance", db.Numeric(10, 2), nullable=False, default=0.00)
     status = db.Column(db.String(20), nullable=False, default="active")
-    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default = datetime.utcnow, onupdate = datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
 
     user = db.relationship("User", back_populates="student")
     enrollments = db.relationship("Enrollment", back_populates="student", cascade="all, delete-orphan")

@@ -229,8 +229,8 @@ def add_student():
         phase=data['phase'],
         fee_balance=data['fee_balance'],
         status=data['status'],
-        created_at = datetime.utcnow(),
-        updated_at = datetime.utcnow()
+        # created_at = datetime.utcnow(),
+        # updated_at = datetime.utcnow()
     )
     db.session.add(new_student)
     db.session.commit()
