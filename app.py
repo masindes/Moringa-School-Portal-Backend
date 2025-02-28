@@ -264,9 +264,28 @@ def get_students():
     admin_check = admin_required()
     if admin_check:
         return admin_check
-    
+
     students = Student.query.all()
-    return jsonify([student.to_dict() for student in students]), 200
+
+    # Manually serialize student data
+    serialized_students = []
+    for student in students:
+        serialized_students.append({
+            "id": student.id,
+            "user_id": student.user_id,
+            "first_name": student.user.first_name,
+            "last_name": student.user.last_name,
+            "email": student.user.email,
+            "phase": student.phase,
+            "total_fee": float(student.total_fee),
+            "amount_paid": float(student.amount_paid),
+            "fee_balance": student.fee_balance,
+            "status": student.status,
+            "created_at": student.created_at.isoformat(),
+            "updated_at": student.updated_at.isoformat()
+        })
+
+    return jsonify(serialized_students), 200
 
 # Admin: Deactivate student account
 @app.route('/students/<int:student_id>/deactivate', methods=['PATCH'])
