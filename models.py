@@ -17,8 +17,8 @@ class User(db.Model, SerializerMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), nullable=False, default="student")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow(), nullable=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=True)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow(), nullable=True)
+    updated_at = db.Column(db.DateTime, default = datetime.utcnow(), onupdate=datetime.utcnow(), nullable=True)
     password_reset_otp = db.Column(db.String(6), nullable=True)
     password_reset_otp_expiry = db.Column(db.DateTime, nullable=True)
     
@@ -39,8 +39,8 @@ class Student(db.Model, SerializerMixin):
     amount_paid = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     _fee_balance = db.Column("fee_balance", db.Numeric(10, 2), nullable=False, default=0.00)
     status = db.Column(db.String(20), nullable=False, default="active")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default = datetime.utcnow, onupdate = datetime.utcnow, nullable=False)
 
     user = db.relationship("User", back_populates="student")
     enrollments = db.relationship("Enrollment", back_populates="student", cascade="all, delete-orphan")
@@ -68,7 +68,7 @@ class Enrollment(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id', ondelete='CASCADE'), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    enrolled_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    enrolled_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
     
     student = db.relationship("Student", back_populates="enrollments")
     course = db.relationship("Course", back_populates="enrollments")
@@ -78,7 +78,7 @@ class Grade(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id', ondelete='CASCADE'), nullable=False)
     grade = db.Column(db.String(5), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
 
     enrollment = db.relationship("Enrollment", back_populates="grades")
 
@@ -86,7 +86,7 @@ class Payment(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id', ondelete='CASCADE'), nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=False)
-    payment_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    payment_date = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
     transaction_id = db.Column(db.String(100), unique=True, nullable=False)
     
@@ -99,23 +99,23 @@ class Notification(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default="unread", nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
 
 class Report(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     admin_id = db.Column(db.Integer)
     report_type = db.Column(db.String(50), nullable=False)
     report_data = db.Column(db.JSON, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
 
 class ChatMessage(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    sent_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    sent_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
 
 class TokenBlocklist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False, unique=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
