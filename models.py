@@ -6,6 +6,9 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
 from datetime import datetime
 import random
+import string
+
+otp_storage ={}
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
