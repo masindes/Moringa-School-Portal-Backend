@@ -26,6 +26,17 @@ def set_password(self, password):
 def check_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
 
+def to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "role": self.role,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
+
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt = JWTManager()
