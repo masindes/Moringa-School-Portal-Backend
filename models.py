@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager
 from datetime import datetime, timezone
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
+from datetime import datetime
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
