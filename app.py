@@ -6,6 +6,12 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt, decode_token
 from models import db, bcrypt, User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage, TokenBlocklist
 from datetime import datetime
+from flask_mail import Mail, Message
+import random
+import string
+from models import db, User, Student, generate_otp, send_otp_email, otp_storage
+
+
 
 app = Flask(__name__)
 
@@ -14,14 +20,158 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///moringa_students.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "03a0eae755348efcd38aa36594fa75c40da931ea19823351e88f893c4337cf48"
 app.config["JWT_SECRET_KEY"] = "0399c5c9f2b940c607e7f11c9f86de41bcf59ec6fdfe1c51f5d87abfaf0a2664"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600 
+
+# Flask-Mail configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'your_email@gmail.com'  # Replace with your email
+app.config['MAIL_PASSWORD'] = 'your_email_password'  # Replace with your email password
 
 CORS(app)
 bcrypt.init_app(app)
 db.init_app(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
+mail =Mail(app)
 
+# Routes
+@app.route('/')
+def home():
+    return {"message": "Hello, Welcome Moringa Students Portal!"}
+
+# User registration with OTP
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    
+    # Check if the email already exists
+    existing_user = User.query.filter_by(email=data['email']).first()
+    if existing_user:
+        return jsonify({"message": "Email already exists"}), 400
+    
+    # Generate and send OTP
+    otp = generate_otp()
+    otp_storage[data['email']] = {
+        'otp': otp,
+        'expiry': datetime.utcnow() + timedelta(minutes=5)
+    }
+    send_otp_email(data['email'], otp, mail)
+    
+    return jsonify({"message": "OTP sent for registration"}), 200
+
+@app.route('/verify_registration_otp', methods=['POST'])
+def verify_registration_otp():
+    data = request.get_json()
+    email = data.get('email')
+    otp = data.get('otp')
+    
+    stored_otp = otp_storage.get(email)
+    if not stored_otp or stored_otp['otp'] != otp:
+        return jsonify({"message": "Invalid OTP"}), 400
+    
+    if datetime.utcnow() > stored_otp['expiry']:
+        return jsonify({"message": "OTP expired"}), 400
+    
+    # Create the user
+    new_user = User(
+        first_name=data['first_name'],
+        last_name=data['last_name'],
+        email=email,
+        role=data.get('role', 'student'),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    new_user.set_password(data['password'])
+    db.session.add(new_user)
+    db.session.commit()
+    
+    # Clear the OTP after successful registration
+    del otp_storage[email]
+    
+    return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201
+
+# Login with OTP
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.query.filter_by(email=data['email']).first()
+    
+    if user and user.check_password(data['password']):
+        # Generate and send OTP
+        otp = generate_otp()
+        otp_storage[user.email] = {
+            'otp': otp,
+            'expiry': datetime.utcnow() + timedelta(minutes=5)
+        }
+        send_otp_email(user.email, otp, mail)
+        return jsonify({"message": "OTP sent for verification"}), 200
+    
+    return jsonify({"message": "Invalid email or password"}), 401
+
+@app.route('/verify_login_otp', methods=['POST'])
+def verify_login_otp():
+    data = request.get_json()
+    email = data.get('email')
+    otp = data.get('otp')
+    
+    stored_otp = otp_storage.get(email)
+    if not stored_otp or stored_otp['otp'] != otp:
+        return jsonify({"message": "Invalid OTP"}), 400
+    
+    if datetime.utcnow() > stored_otp['expiry']:
+        return jsonify({"message": "OTP expired"}), 400
+    
+    user = User.query.filter_by(email=email).first()
+    identity = str(user.id)  # Ensure identity is a string
+    access_token = create_access_token(identity=identity, additional_claims={"role": user.role})
+    
+    # Clear the OTP after successful verification
+    del otp_storage[email]
+    
+    return jsonify({"message": "Logged in successfully", "access_token": access_token}), 200
+
+# Password reset with OTP
+@app.route('/request_password_reset', methods=['POST'])
+def request_password_reset():
+    data = request.get_json()
+    email = data.get('email')
+    
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    otp = generate_otp()
+    otp_storage[email] = {
+        'otp': otp,
+        'expiry': datetime.utcnow() + timedelta(minutes=5)
+    }
+    send_otp_email(email, otp, mail)
+    return jsonify({"message": "OTP sent for password reset"}), 200
+
+@app.route('/reset_password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    email = data.get('email')
+    otp = data.get('otp')
+    new_password = data.get('new_password')
+    
+    stored_otp = otp_storage.get(email)
+    if not stored_otp or stored_otp['otp'] != otp:
+        return jsonify({"message": "Invalid OTP"}), 400
+    
+    if datetime.utcnow() > stored_otp['expiry']:
+        return jsonify({"message": "OTP expired"}), 400
+    
+    user = User.query.filter_by(email=email).first()
+    user.set_password(new_password)
+    db.session.commit()
+    
+    # Clear the OTP after successful password reset
+    del otp_storage[email]
+    
+    return jsonify({"message": "Password reset successfully"}), 200
 # check if the current user is an admin
 def admin_required():
     user_id = int(get_jwt_identity())

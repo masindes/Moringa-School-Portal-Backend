@@ -16,7 +16,9 @@ marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 stripe = "*"
 requests = "*"
+sqlalchemy-serializer = "*"
 flask-migrate = "*"
+flask-mail = "*"
 
 [dev-packages]
 
