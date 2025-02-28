@@ -13,6 +13,7 @@ import datetime
 import base64
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
+import time
 load_dotenv()
 
 
@@ -38,6 +39,8 @@ bcrypt.init_app(app)
 db.init_app(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
+
+current_time = datetime.fromtimestamp(time.time())
 
 # Generate M-Pesa access token
 def generate_access_token():
@@ -137,13 +140,13 @@ def register():
     role = data.get('role', 'student')
 
     new_user = User(
-        first_name=data['first_name'],
-        last_name=data['last_name'],
-        email=data['email'],
-        role=role,
-        created_at=datetime.utcnow(), 
-        updated_at=datetime.utcnow()
-    )
+    first_name=data['first_name'],
+    last_name=data['last_name'],
+    email=data['email'],
+    role=role,
+    created_at=current_time,
+    updated_at=current_time
+)
     new_user.set_password(data['password'])
     db.session.add(new_user)
     db.session.commit()
