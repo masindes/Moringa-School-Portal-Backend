@@ -57,6 +57,11 @@ def to_dict(self):
             "updated_at": self.updated_at.isoformat()
         }
 
+
+# Helper functions
+def generate_otp(length=6):
+    return ''.join(random.choices(string.digits, k=length))
+
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt = JWTManager()
