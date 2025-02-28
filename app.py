@@ -122,28 +122,34 @@ def check_if_token_in_blocklist(jwt_header, jwt_payload):
 def home():
     return {"message": "Hello, Welcome Moringa Students Portal!"}
 
+
 # User registration route
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    
+
     # Check if the email already exists
     existing_user = User.query.filter_by(email=data['email']).first()
     if existing_user:
         return jsonify({"message": "Email already exists"}), 400
 
+    # Set default role to "student" if not provided
+    role = data.get('role', 'student')
+
     new_user = User(
         first_name=data['first_name'],
         last_name=data['last_name'],
         email=data['email'],
-        role=data['role'],
-        created_at = datetime.utcnow(),
-        updated_at = datetime.utcnow()
+        role=role,
+        created_at=datetime.utcnow(), 
+        updated_at=datetime.utcnow()
     )
     new_user.set_password(data['password'])
     db.session.add(new_user)
     db.session.commit()
+
     return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201
+
 
 # User login route
 @app.route('/login', methods=['POST'])
@@ -151,7 +157,7 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(email=data['email']).first()
     if user and user.check_password(data['password']):
-        identity = str(user.id)  # Ensure identity is a string
+        identity = str(user.id) 
         access_token = create_access_token(identity=identity, additional_claims={"role": user.role})
         return jsonify({"message": "Logged in successfully", "access_token": access_token}), 200
     return jsonify({"message": "Invalid email or password"}), 401
