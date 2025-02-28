@@ -8,6 +8,12 @@ from datetime import datetime
 import random
 import string
 
+
+db = SQLAlchemy()
+bcrypt = Bcrypt()
+jwt = JWTManager()
+
+
 otp_storage ={}
 
 class User(db.Model):
@@ -67,9 +73,7 @@ def send_otp_email(email, otp, mail):
     msg.body = f'Your OTP is: {otp}'
     mail.send(msg)
 
-db = SQLAlchemy()
-bcrypt = Bcrypt()
-jwt = JWTManager()
+
 
 class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
