@@ -18,7 +18,8 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='student')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-   
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt = JWTManager()
