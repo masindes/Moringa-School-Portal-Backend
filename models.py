@@ -20,6 +20,9 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+def set_password(self, password):
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt = JWTManager()
