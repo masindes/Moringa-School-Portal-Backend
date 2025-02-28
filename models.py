@@ -5,6 +5,8 @@ from flask_jwt_extended import JWTManager
 from datetime import datetime
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates, relationship
+from sqlalchemy.sql import func
+
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -21,6 +23,8 @@ class User(db.Model, SerializerMixin):
     updated_at = db.Column(db.DateTime, default = datetime.utcnow(), onupdate=datetime.utcnow(), nullable=True)
     password_reset_otp = db.Column(db.String(6), nullable=True)
     password_reset_otp_expiry = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
     
     student = db.relationship("Student", back_populates="user", uselist=False, cascade="all, delete-orphan")
     serialize_rules = ("-password_hash", "-student.user", "-student")

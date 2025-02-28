@@ -13,7 +13,7 @@ import datetime
 import base64
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
-import time
+
 load_dotenv()
 
 
@@ -40,7 +40,7 @@ db.init_app(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
 
-current_time = datetime.fromtimestamp(time.time())
+
 
 # Generate M-Pesa access token
 def generate_access_token():
@@ -143,9 +143,7 @@ def register():
     first_name=data['first_name'],
     last_name=data['last_name'],
     email=data['email'],
-    role=role,
-    created_at=current_time,
-    updated_at=current_time
+    role=role    
 )
     new_user.set_password(data['password'])
     db.session.add(new_user)
