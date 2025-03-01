@@ -160,7 +160,7 @@ def login():
     if user and user.check_password(data['password']):
         identity = str(user.id) 
         access_token = create_access_token(identity=identity, additional_claims={"role": user.role})
-        return jsonify({"message": "Logged in successfully", "access_token": access_token}), 200
+        return jsonify({"message": "Logged in successfully", "access_token": access_token, "role": user.role}), 200
     return jsonify({"message": "Invalid email or password"}), 401
 
 # Logout route to add the token to the blacklist
