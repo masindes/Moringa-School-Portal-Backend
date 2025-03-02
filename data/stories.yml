@@ -1,8 +1,106 @@
 version: "3.1"
 stories:
-  - story: Happy path
+  # User Authentication
+  - story: User signs up
     steps:
-      - intent: greet
-      - action: utter_greet
-      - intent: goodbye
-      - action: utter_goodbye
+      - intent: signup
+      - action: utter_ask_signup_details
+      - intent: provide_signup_details
+      - action: action_signup
+      - intent: signup_success
+      - action: utter_signup_success
+
+  - story: User logs in
+    steps:
+      - intent: login
+      - action: utter_ask_login_details
+      - intent: provide_login_details
+      - action: action_login
+      - intent: login_success
+      - action: utter_login_success
+
+  - story: User resets password
+    steps:
+      - intent: reset_password
+      - action: utter_ask_reset_password_email
+      - intent: provide_email
+      - action: action_reset_password
+      - intent: reset_password_success
+      - action: utter_reset_password_success
+
+  # Home Page
+  - story: User views homepage
+    steps:
+      - intent: view_homepage
+      - action: utter_homepage_announcements
+      - action: utter_homepage_quick_links
+
+  # Student Dashboard
+  - story: Student views dashboard
+    steps:
+      - intent: view_dashboard
+      - action: utter_dashboard_options
+      - intent: view_grades
+      - action: action_show_grades
+      - intent: view_fee_balance
+      - action: action_show_fee_balance
+      - intent: view_current_phase
+      - action: action_show_current_phase
+
+  # Grades
+  - story: Student views grades
+    steps:
+      - intent: view_grades
+      - action: action_show_grades
+
+  # Fee Balance
+  - story: Student views fee balance
+    steps:
+      - intent: view_fee_balance
+      - action: action_show_fee_balance
+
+  # Current Phase
+  - story: Student views current phase
+    steps:
+      - intent: view_current_phase
+      - action: action_show_current_phase
+
+  # Payment
+  - story: Student makes payment
+    steps:
+      - intent: make_payment
+      - action: utter_ask_payment_details
+      - intent: provide_payment_details
+      - action: action_process_payment
+      - intent: payment_success
+      - action: utter_payment_success
+
+  # Admin Features
+  - story: Admin views dashboard
+    steps:
+      - intent: view_admin_dashboard
+      - action: utter_admin_dashboard_options
+      - intent: manage_students
+      - action: utter_ask_student_management_action
+      - intent: add_student
+      - action: action_add_student
+      - intent: update_student
+      - action: action_update_student
+      - intent: deactivate_student
+      - action: action_deactivate_student
+
+  - story: Admin views student details
+    steps:
+      - intent: view_student_details
+      - action: utter_ask_student_id
+      - intent: provide_student_id
+      - action: action_show_student_details
+
+  - story: Admin manages payments
+    steps:
+      - intent: manage_payments
+      - action: utter_ask_payment_action
+      - intent: view_payment_records
+      - action: action_show_payment_records
+      - intent: update_payment_record
+      - action: action_update_payment_record
