@@ -1,74 +1,157 @@
 version: "3.1"
-rules:
+nlu:
   # User Authentication
-  - rule: Greet the user
-    steps:
-      - intent: greet
-      - action: utter_greet
+  - intent: greet
+    examples: |
+      - Hi
+      - Hello
+      - Hey
+      - Good morning
+      - Good afternoon
+      - Good evening
 
-  - rule: Provide help
-    steps:
-      - intent: help
-      - action: utter_help
+  - intent: help
+    examples: |
+      - Help
+      - I need help
+      - Can you help me?
+      - What can you do?
+      - How does this work?
+
+  - intent: signup
+    examples: |
+      - I want to sign up
+      - Create an account
+      - Register
+      - Sign me up
+      - How do I sign up?
+
+  - intent: provide_signup_details
+    examples: |
+      - My name is [John](name), email is [john@example.com](email), and password is [password123](password)
+      - Here are my details: [Jane](name), [jane@example.com](email), [pass123](password)
+      - Name: [Alice](name), Email: [alice@example.com](email), Password: [alice123](password)
+
+  - intent: login
+    examples: |
+      - I want to log in
+      - Login
+      - Sign in
+      - How do I log in?
+      - Can I log in?
+
+  - intent: provide_login_details
+    examples: |
+      - My email is [john@example.com](email) and password is [password123](password)
+      - Here are my login details: [jane@example.com](email), [pass123](password)
+      - Email: [alice@example.com](email), Password: [alice123](password)
+
+  - intent: reset_password
+    examples: |
+      - I forgot my password
+      - Reset my password
+      - Can I reset my password?
+      - How do I reset my password?
+      - I need to reset my password
+
+  - intent: provide_email
+    examples: |
+      - My email is [john@example.com](email)
+      - Here's my email: [jane@example.com](email)
+      - Email: [alice@example.com](email)
 
   # Home Page
-  - rule: Show homepage announcements
-    steps:
-      - intent: view_homepage
-      - action: utter_homepage_announcements
-
-  - rule: Show homepage quick links
-    steps:
-      - intent: view_homepage
-      - action: utter_homepage_quick_links
+  - intent: view_homepage
+    examples: |
+      - Show me the homepage
+      - What's on the homepage?
+      - Homepage
+      - Take me to the homepage
+      - What's new?
 
   # Student Dashboard
-  - rule: Show dashboard options
-    steps:
-      - intent: view_dashboard
-      - action: utter_dashboard_options
+  - intent: view_dashboard
+    examples: |
+      - Show me my dashboard
+      - Dashboard
+      - What's on my dashboard?
+      - Take me to my dashboard
+      - Student dashboard
 
-  # Grades
-  - rule: Show grades
-    steps:
-      - intent: view_grades
-      - action: action_show_grades
+  - intent: view_grades
+    examples: |
+      - Show me my grades
+      - What are my grades?
+      - Grades
+      - How am I doing in my courses?
+      - Can I see my grades?
 
-  # Fee Balance
-  - rule: Show fee balance
-    steps:
-      - intent: view_fee_balance
-      - action: action_show_fee_balance
+  - intent: view_fee_balance
+    examples: |
+      - What's my fee balance?
+      - Show me my fee balance
+      - Fee balance
+      - How much do I owe?
+      - Can I see my fee balance?
 
-  # Current Phase
-  - rule: Show current phase
-    steps:
-      - intent: view_current_phase
-      - action: action_show_current_phase
+  - intent: view_current_phase
+    examples: |
+      - What's my current phase?
+      - Show me my current phase
+      - Current phase
+      - Which phase am I in?
+      - Can I see my current phase?
 
   # Payment
-  - rule: Ask for payment details
-    steps:
-      - intent: make_payment
-      - action: utter_ask_payment_details
+  - intent: make_payment
+    examples: |
+      - I want to make a payment
+      - Pay my fees
+      - How do I make a payment?
+      - Can I pay online?
+      - Payment
+
+  - intent: provide_payment_details
+    examples: |
+      - Here are my payment details: [100](amount), [credit card](payment_method)
+      - Amount: [200](amount), Method: [bank transfer](payment_method)
+      - I want to pay [150](amount) using [PayPal](payment_method)
 
   # Admin Features
-  - rule: Show admin dashboard options
-    steps:
-      - intent: view_admin_dashboard
-      - action: utter_admin_dashboard_options
+  - intent: view_admin_dashboard
+    examples: |
+      - Show me the admin dashboard
+      - Admin dashboard
+      - What's on the admin dashboard?
+      - Take me to the admin dashboard
+      - Admin
 
-  - rule: Ask for student management action
-    steps:
-      - intent: manage_students
-      - action: utter_ask_student_management_action
+  - intent: manage_students
+    examples: |
+      - I want to manage students
+      - Manage students
+      - Add a student
+      - Update a student
+      - Deactivate a student
 
-  - rule: Ask for student ID
-    steps:
-      - intent: view_student_details
-      - action: utter_ask_student_id
+  - intent: view_student_details
+    examples: |
+      - Show me student details
+      - What are the details for student [123](student_id)?
+      - Student details
+      - Can I see details for student [456](student_id)?
+      - Details for student [789](student_id)
 
-  - rule: Ask for payment action
-    steps:
-      - intent: manage_payments
-      - action: utter_ask_payment_action
+  - intent: provide_student_id
+    examples: |
+      - The student ID is [123](student_id)
+      - Here's the student ID: [456](student_id)
+      - Student ID: [789](student_id)
+
+  - intent: manage_payments
+    examples: |
+      - I want to manage payments
+      - Manage payments
+      - View payment records
+      - Update payment records
+      - Payment management
