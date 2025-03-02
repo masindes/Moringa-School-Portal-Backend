@@ -222,19 +222,42 @@ def add_student():
     admin_check = admin_required()
     if admin_check:
         return admin_check
-
+    
     data = request.get_json()
-    new_student = Student(
-        user_id=data['user_id'],
-        phase=data['phase'],
-        fee_balance=data['fee_balance'],
-        status=data['status'],
-        # created_at = datetime.utcnow(),
-        # updated_at = datetime.utcnow()
-    )
+
+    if 'user_id' in data:
+        # Scenario 1: Adding student using existing user_id
+        new_student = Student(
+            user_id=data['user_id'],
+            phase=data['phase'],
+            total_fee=data['total_fee'],
+            amount_paid=data['amount_paid'],
+            status=data['status']
+        )
+    else:
+        # Scenario 2: Creating a new user and adding student
+        new_user = User(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            email=data['email'],
+            role='student'
+        )
+        new_user.set_password(data['password'])
+        
+        new_student = Student(
+            user=new_user,
+            phase=data['phase'],
+            total_fee=data['total_fee'],
+            amount_paid=data['amount_paid'],
+            status=data['status']
+        )
+        db.session.add(new_user)  # Add new user to session first
+
     db.session.add(new_student)
     db.session.commit()
+
     return jsonify({"message": "Student added successfully", "student": new_student.to_dict()}), 201
+
 
 # Admin: Update student details
 @app.route('/students/<int:student_id>', methods=['PATCH'])
