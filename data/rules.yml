@@ -1,6 +1,74 @@
 version: "3.1"
 rules:
+  # User Authentication
   - rule: Greet the user
     steps:
       - intent: greet
       - action: utter_greet
+
+  - rule: Provide help
+    steps:
+      - intent: help
+      - action: utter_help
+
+  # Home Page
+  - rule: Show homepage announcements
+    steps:
+      - intent: view_homepage
+      - action: utter_homepage_announcements
+
+  - rule: Show homepage quick links
+    steps:
+      - intent: view_homepage
+      - action: utter_homepage_quick_links
+
+  # Student Dashboard
+  - rule: Show dashboard options
+    steps:
+      - intent: view_dashboard
+      - action: utter_dashboard_options
+
+  # Grades
+  - rule: Show grades
+    steps:
+      - intent: view_grades
+      - action: action_show_grades
+
+  # Fee Balance
+  - rule: Show fee balance
+    steps:
+      - intent: view_fee_balance
+      - action: action_show_fee_balance
+
+  # Current Phase
+  - rule: Show current phase
+    steps:
+      - intent: view_current_phase
+      - action: action_show_current_phase
+
+  # Payment
+  - rule: Ask for payment details
+    steps:
+      - intent: make_payment
+      - action: utter_ask_payment_details
+
+  # Admin Features
+  - rule: Show admin dashboard options
+    steps:
+      - intent: view_admin_dashboard
+      - action: utter_admin_dashboard_options
+
+  - rule: Ask for student management action
+    steps:
+      - intent: manage_students
+      - action: utter_ask_student_management_action
+
+  - rule: Ask for student ID
+    steps:
+      - intent: view_student_details
+      - action: utter_ask_student_id
+
+  - rule: Ask for payment action
+    steps:
+      - intent: manage_payments
+      - action: utter_ask_payment_action
