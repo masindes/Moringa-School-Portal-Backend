@@ -12,14 +12,10 @@ rules:
       - action: utter_help
 
   # Home Page
-  - rule: Show homepage announcements
+  - rule: Show homepage content
     steps:
       - intent: view_homepage
       - action: utter_homepage_announcements
-
-  - rule: Show homepage quick links
-    steps:
-      - intent: view_homepage
       - action: utter_homepage_quick_links
 
   # Student Dashboard

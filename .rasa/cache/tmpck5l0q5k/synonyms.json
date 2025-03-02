@@ -1,0 +1,20 @@
+{
+  "john": "John",
+  "john@example.com": "john@example.com",
+  "password123": "password123",
+  "jane": "Jane",
+  "jane@example.com": "jane@example.com",
+  "pass123": "pass123",
+  "alice": "Alice",
+  "alice@example.com": "alice@example.com",
+  "alice123": "alice123",
+  "100": "100",
+  "credit card": "credit card",
+  "200": "200",
+  "bank transfer": "bank transfer",
+  "150": "150",
+  "paypal": "PayPal",
+  "123": "123",
+  "456": "456",
+  "789": "789"
+}

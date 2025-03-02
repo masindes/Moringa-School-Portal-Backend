@@ -1,0 +1,22 @@
+{
+  "0": "greet",
+  "1": "help",
+  "2": "login",
+  "3": "make_payment",
+  "4": "manage_payments",
+  "5": "manage_students",
+  "6": "provide_email",
+  "7": "provide_login_details",
+  "8": "provide_payment_details",
+  "9": "provide_signup_details",
+  "10": "provide_student_id",
+  "11": "reset_password",
+  "12": "signup",
+  "13": "view_admin_dashboard",
+  "14": "view_current_phase",
+  "15": "view_dashboard",
+  "16": "view_fee_balance",
+  "17": "view_grades",
+  "18": "view_homepage",
+  "19": "view_student_details"
+}

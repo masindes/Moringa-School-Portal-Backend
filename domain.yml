@@ -26,6 +26,10 @@ intents:
   - update_payment_record
 
 responses:
+  utter_greet:
+    - text: "Hello! How can I help you today?"
+  utter_help:
+    - text: "I can help you with your account, grades, fee balance, and more. What do you need?"
   utter_ask_signup_details:
     - text: "Please provide your signup details (name, email, password)."
   utter_ask_login_details:
@@ -48,6 +52,14 @@ responses:
     - text: "Please provide the student ID."
   utter_ask_payment_action:
     - text: "What would you like to do? View Payment Records or Update Payment Record?"
+  utter_reset_password_success:
+    - text: "Your password has been reset successfully. Please check your email for further instructions."
+  utter_signup_success:
+    - text: "Your account has been created successfully. You can now log in."
+  utter_login_success:
+    - text: "You have been logged in successfully."
+  utter_payment_success:
+    - text: "Your payment has been processed successfully. Thank you!"
 
 actions:
   - action_signup
