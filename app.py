@@ -265,7 +265,26 @@ def add_student():
 
     db.session.commit()
 
-    return jsonify({"message": "Student added successfully", "student": new_student.to_dict()}), 201
+    # Manually serialize the student data
+    student_data = {
+        "id": new_student.id,
+        "user_id": new_student.user_id,
+        "first_name": new_student.user.first_name,
+        "last_name": new_student.user.last_name,
+        "email": new_student.user.email,
+        "phase": new_student.phase,
+        "total_fee": float(new_student.total_fee),
+        "amount_paid": float(new_student.amount_paid),
+        "status": new_student.status,
+        "created_at": new_student.created_at.isoformat(),
+        "updated_at": new_student.updated_at.isoformat(),
+        "course": {
+            "course_id": new_enrollment.course_id,
+            "enrolled_at": new_enrollment.enrolled_at.isoformat()
+        }
+    }
+
+    return jsonify({"message": "Student added successfully", "student": student_data}), 201
 
 # Admin: Update student details
 @app.route('/students/<int:student_id>', methods=['PATCH'])
