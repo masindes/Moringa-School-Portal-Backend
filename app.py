@@ -259,7 +259,7 @@ def add_student():
     new_enrollment = Enrollment(
         student=new_student,
         course_id=data['course_id'],
-        enrolled_at=datetime.utcnow()
+        # enrolled_at=datetime.utcnow()
     )
     db.session.add(new_enrollment)
 
