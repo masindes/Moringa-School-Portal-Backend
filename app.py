@@ -254,10 +254,18 @@ def add_student():
         db.session.add(new_user)  # Add new user to session first
 
     db.session.add(new_student)
+
+    # Add course enrollment for the student
+    new_enrollment = Enrollment(
+        student=new_student,
+        course_id=data['course_id'],
+        enrolled_at=datetime.utcnow()
+    )
+    db.session.add(new_enrollment)
+
     db.session.commit()
 
     return jsonify({"message": "Student added successfully", "student": new_student.to_dict()}), 201
-
 
 # Admin: Update student details
 @app.route('/students/<int:student_id>', methods=['PATCH'])
