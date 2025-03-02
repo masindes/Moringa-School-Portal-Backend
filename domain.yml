@@ -1,32 +1,65 @@
-# domain.yml
-version: "3.0"
+version: "3.1"
 
 intents:
-  - greet
-  - goodbye
-  - affirm
-  - deny
-  - mood_great
-  - mood_unhappy
+  - signup
+  - provide_signup_details
+  - login
+  - provide_login_details
+  - reset_password
+  - provide_email
+  - view_homepage
+  - view_dashboard
+  - view_grades
+  - view_fee_balance
+  - view_current_phase
+  - make_payment
+  - provide_payment_details
+  - view_admin_dashboard
+  - manage_students
+  - add_student
+  - update_student
+  - deactivate_student
+  - view_student_details
+  - provide_student_id
+  - manage_payments
+  - view_payment_records
+  - update_payment_record
 
 responses:
-  utter_greet:
-    - text: "Hey! How are you?"
-  utter_goodbye:
-    - text: "Bye! Have a great day!"
-  utter_cheer_up:
-    - text: "Here's something to cheer you up: You're awesome!"
-  utter_did_that_help:
-    - text: "Did that help you?"
-  utter_happy:
-    - text: "Great to hear that!"
-  utter_unhappy:
-    - text: "I'm sorry to hear that. How can I help?"
+  utter_ask_signup_details:
+    - text: "Please provide your signup details (name, email, password)."
+  utter_ask_login_details:
+    - text: "Please provide your login details (email, password)."
+  utter_ask_reset_password_email:
+    - text: "Please provide your email to reset your password."
+  utter_homepage_announcements:
+    - text: "Here are the latest announcements: [Announcements]."
+  utter_homepage_quick_links:
+    - text: "Quick links: Grades, Fee Balance, Current Phase."
+  utter_dashboard_options:
+    - text: "What would you like to view? Grades, Fee Balance, or Current Phase?"
+  utter_ask_payment_details:
+    - text: "Please provide your payment details (amount, payment method)."
+  utter_admin_dashboard_options:
+    - text: "What would you like to do? Manage Students, View Student Details, or Manage Payments?"
+  utter_ask_student_management_action:
+    - text: "What action would you like to perform? Add Student, Update Student, or Deactivate Student?"
+  utter_ask_student_id:
+    - text: "Please provide the student ID."
+  utter_ask_payment_action:
+    - text: "What would you like to do? View Payment Records or Update Payment Record?"
 
 actions:
-  - utter_greet
-  - utter_goodbye
-  - utter_cheer_up
-  - utter_did_that_help
-  - utter_happy
-  - utter_unhappy
+  - action_signup
+  - action_login
+  - action_reset_password
+  - action_show_grades
+  - action_show_fee_balance
+  - action_show_current_phase
+  - action_process_payment
+  - action_add_student
+  - action_update_student
+  - action_deactivate_student
+  - action_show_student_details
+  - action_show_payment_records
+  - action_update_payment_record
