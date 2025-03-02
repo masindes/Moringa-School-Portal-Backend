@@ -1,0 +1,32 @@
+# domain.yml
+version: "3.0"
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - mood_great
+  - mood_unhappy
+
+responses:
+  utter_greet:
+    - text: "Hey! How are you?"
+  utter_goodbye:
+    - text: "Bye! Have a great day!"
+  utter_cheer_up:
+    - text: "Here's something to cheer you up: You're awesome!"
+  utter_did_that_help:
+    - text: "Did that help you?"
+  utter_happy:
+    - text: "Great to hear that!"
+  utter_unhappy:
+    - text: "I'm sorry to hear that. How can I help?"
+
+actions:
+  - utter_greet
+  - utter_goodbye
+  - utter_cheer_up
+  - utter_did_that_help
+  - utter_happy
+  - utter_unhappy
