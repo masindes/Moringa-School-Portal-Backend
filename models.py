@@ -72,7 +72,7 @@ class Enrollment(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id', ondelete='CASCADE'), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    enrolled_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
+    enrolled_at = db.Column(db.DateTime, default=func.now(), nullable=False)
     
     student = db.relationship("Student", back_populates="enrollments")
     course = db.relationship("Course", back_populates="enrollments")
@@ -82,7 +82,7 @@ class Grade(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id', ondelete='CASCADE'), nullable=False)
     grade = db.Column(db.String(5), nullable=False)
-    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
 
     enrollment = db.relationship("Enrollment", back_populates="grades")
 
