@@ -439,6 +439,21 @@ def delete_grade(grade_id):
     db.session.commit()
     return jsonify({"message": "Grade deleted successfully"}), 200
 
+# Admin: Delete user
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({"message": "User deleted successfully"}), 200
+
 # Admin: Delete student
 @app.route('/students/<int:student_id>', methods=['DELETE'])
 @jwt_required()
@@ -453,8 +468,6 @@ def delete_student(student_id):
     db.session.commit()
 
     return jsonify({"message": "Student deleted successfully"}), 200
-
-
 
 # Student: Get grades
 @app.route('/students/<int:student_id>/grades', methods=['GET'])
