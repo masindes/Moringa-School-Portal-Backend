@@ -192,6 +192,31 @@ def change_student_password(student_id):
     db.session.commit()
     return jsonify({"message": "Password changed successfully"}), 200
 
+# Admin: View all users
+@app.route('/users', methods=['GET'])
+@jwt_required()
+def get_users():
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+    
+    users = User.query.all()
+
+    # Manually serialize user data
+    serialized_users = []
+    for user in users:
+        serialized_users.append({
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "role": user.role,
+            "created_at": user.created_at.isoformat(),
+            "updated_at": user.updated_at.isoformat()
+        })
+
+    return jsonify(serialized_users), 200
 
 # Get user info route
 @app.route('/user/<int:user_id>', methods=['GET'])
@@ -474,7 +499,7 @@ def make_payment(student_id):
     new_payment = Payment(
         student_id=student_id,
         amount=data['amount'],
-        payment_date = datetime.utcnow(),
+        # payment_date = datetime.utcnow(),
         payment_method=data['payment_method'],
         transaction_id=data['transaction_id']
     )
