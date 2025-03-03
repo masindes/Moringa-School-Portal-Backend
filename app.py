@@ -422,6 +422,35 @@ def deactivate_student(student_id):
     
     return jsonify({"message": "Student deactivated successfully", "student": student_data}), 200
 
+# Admin: Activate student account
+@app.route('/students/<int:student_id>/activate', methods=['PATCH'])
+@jwt_required()
+def activate_student(student_id):
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+    
+    student = Student.query.get_or_404(student_id)
+    student.status = 'active'
+    db.session.commit()
+    
+    # Manually serialize the student data
+    student_data = {
+        "id": student.id,
+        "user_id": student.user_id,
+        "phase": student.phase,
+        "total_fee": float(student.total_fee),
+        "amount_paid": float(student.amount_paid),
+        "fee_balance": student.fee_balance,
+        "status": student.status,
+        "created_at": student.created_at.isoformat(),
+        "updated_at": student.updated_at.isoformat(),
+    }
+    
+    return jsonify({"message": "Student activated successfully", "student": student_data}), 200
+
+
 # Create a new grade for a student enrollment
 @app.route('/enrollments/<int:enrollment_id>/grades', methods=['POST'])
 @jwt_required()
