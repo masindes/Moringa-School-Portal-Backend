@@ -11,9 +11,15 @@ import random
 import string
 from models import db, User, Student, generate_otp, send_otp_email, otp_storage
 
-
-
 app = Flask(__name__)
+
+CORS(app)
+bcrypt.init_app(app)
+db.init_app(app)
+jwt = JWTManager(app)
+migrate = Migrate(app, db)
+mail =Mail(app)
+
 
 # Configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///moringa_students.db"
@@ -29,17 +35,6 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'your_email@gmail.com'  # Replace with your email
 app.config['MAIL_PASSWORD'] = 'your_email_password'  # Replace with your email password
 
-CORS(app)
-bcrypt.init_app(app)
-db.init_app(app)
-jwt = JWTManager(app)
-migrate = Migrate(app, db)
-mail =Mail(app)
-
-# Routes
-@app.route('/')
-def home():
-    return {"message": "Hello, Welcome Moringa Students Portal!"}
 
 # User registration with OTP
 @app.route('/register', methods=['POST'])
