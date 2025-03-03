@@ -1,8 +1,8 @@
-"""Initial migration
+"""initial migration
 
-Revision ID: 373888bd7254
+Revision ID: 294d7fab40ba
 Revises: 
-Create Date: 2025-02-25 14:52:18.364545
+Create Date: 2025-02-27 23:55:06.181157
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '373888bd7254'
+revision = '294d7fab40ba'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -48,8 +48,10 @@ def upgrade():
     sa.Column('email', sa.String(length=255), nullable=False),
     sa.Column('password_hash', sa.String(length=255), nullable=False),
     sa.Column('role', sa.String(length=50), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('password_reset_otp', sa.String(length=6), nullable=True),
+    sa.Column('password_reset_otp_expiry', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
@@ -92,7 +94,7 @@ def upgrade():
     sa.Column('course_id', sa.Integer(), nullable=False),
     sa.Column('enrolled_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['course_id'], ['course.id'], ),
-    sa.ForeignKeyConstraint(['student_id'], ['student.id'], ),
+    sa.ForeignKeyConstraint(['student_id'], ['student.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('payment',
@@ -102,7 +104,7 @@ def upgrade():
     sa.Column('payment_date', sa.DateTime(), nullable=False),
     sa.Column('payment_method', sa.String(length=50), nullable=False),
     sa.Column('transaction_id', sa.String(length=100), nullable=False),
-    sa.ForeignKeyConstraint(['student_id'], ['student.id'], ),
+    sa.ForeignKeyConstraint(['student_id'], ['student.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('transaction_id')
     )
@@ -111,7 +113,7 @@ def upgrade():
     sa.Column('enrollment_id', sa.Integer(), nullable=False),
     sa.Column('grade', sa.String(length=5), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['enrollment_id'], ['enrollment.id'], ),
+    sa.ForeignKeyConstraint(['enrollment_id'], ['enrollment.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

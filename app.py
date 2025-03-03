@@ -1,5 +1,5 @@
 #app.py 
-
+import os
 from flask import Flask, request, jsonify, make_response
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -12,29 +12,19 @@ import requests
 import datetime
 import base64
 from requests.auth import HTTPBasicAuth
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 app = Flask(__name__)
 
 # Configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///moringa_students.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://moringa_school_portal_db_user:aiA8b41Ed27WuM47JLtr5QfmJHuHvpUn@dpg-cv0cdidds78s73edtos0-a.oregon-postgres.render.com/moringa_school_portal_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"] = "03a0eae755348efcd38aa36594fa75c40da931ea19823351e88f893c4337cf48"
-app.config["JWT_SECRET_KEY"] = "0399c5c9f2b940c607e7f11c9f86de41bcf59ec6fdfe1c51f5d87abfaf0a2664"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KE")
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600 
-
-
-import requests
-import base64
-import datetime
-from requests.auth import HTTPBasicAuth
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from flask_bcrypt import Bcrypt
-from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate
-
-app = Flask(__name__)
 
 # M-Pesa API credentials
 CONSUMER_KEY = "RgXJq5gNAcVfObTMmXVAvOIcV28bsvCh3dqUVJuG7pSzAR0x"
@@ -43,11 +33,13 @@ SHORTCODE = "174379"
 PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
 CALLBACK_URL = "https://moringa-school-portal-backend.onrender.com/mpesa/callback"
 
-CORS(app)
-bcrypt = Bcrypt(app)
-db = SQLAlchemy(app)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, supports_credentials=True)
+bcrypt.init_app(app)
+db.init_app(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
+
+
 
 # Generate M-Pesa access token
 def generate_access_token():
@@ -165,28 +157,32 @@ def check_if_token_in_blocklist(jwt_header, jwt_payload):
 def home():
     return {"message": "Hello, Welcome Moringa Students Portal!"}
 
+
 # User registration route
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    
+
     # Check if the email already exists
     existing_user = User.query.filter_by(email=data['email']).first()
     if existing_user:
         return jsonify({"message": "Email already exists"}), 400
 
+    # Set default role to "student" if not provided
+    role = data.get('role', 'student')
+
     new_user = User(
-        first_name=data['first_name'],
-        last_name=data['last_name'],
-        email=data['email'],
-        role=data['role'],
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
-    )
+    first_name=data['first_name'],
+    last_name=data['last_name'],
+    email=data['email'],
+    role=role    
+)
     new_user.set_password(data['password'])
     db.session.add(new_user)
     db.session.commit()
+
     return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201
+
 
 # User login route
 @app.route('/login', methods=['POST'])
@@ -194,9 +190,9 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(email=data['email']).first()
     if user and user.check_password(data['password']):
-        identity = str(user.id)  # Ensure identity is a string
+        identity = str(user.id) 
         access_token = create_access_token(identity=identity, additional_claims={"role": user.role})
-        return jsonify({"message": "Logged in successfully", "access_token": access_token}), 200
+        return jsonify({"message": "Logged in successfully", "access_token": access_token, "role": user.role}), 200
     return jsonify({"message": "Invalid email or password"}), 401
 
 # Logout route to add the token to the blacklist
@@ -228,6 +224,31 @@ def change_student_password(student_id):
     db.session.commit()
     return jsonify({"message": "Password changed successfully"}), 200
 
+# Admin: View all users
+@app.route('/users', methods=['GET'])
+@jwt_required()
+def get_users():
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+    
+    users = User.query.all()
+
+    # Manually serialize user data
+    serialized_users = []
+    for user in users:
+        serialized_users.append({
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "role": user.role,
+            "created_at": user.created_at.isoformat(),
+            "updated_at": user.updated_at.isoformat()
+        })
+
+    return jsonify(serialized_users), 200
 
 # Get user info route
 @app.route('/user/<int:user_id>', methods=['GET'])
@@ -258,19 +279,69 @@ def add_student():
     admin_check = admin_required()
     if admin_check:
         return admin_check
-
+    
     data = request.get_json()
-    new_student = Student(
-        user_id=data['user_id'],
-        phase=data['phase'],
-        fee_balance=data['fee_balance'],
-        status=data['status'],
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
-    )
+
+    if 'user_id' in data:
+        #Adding student using existing user_id
+        new_student = Student(
+            user_id=data['user_id'],
+            phase=data['phase'],
+            total_fee=data['total_fee'],
+            amount_paid=data['amount_paid'],
+            status=data['status']
+        )
+    else:
+        #Creating a new user and adding student
+        new_user = User(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            email=data['email'],
+            role='student'
+        )
+        new_user.set_password(data['password'])
+        
+        new_student = Student(
+            user=new_user,
+            phase=data['phase'],
+            total_fee=data['total_fee'],
+            amount_paid=data['amount_paid'],
+            status=data['status']
+        )
+        db.session.add(new_user)  
+
     db.session.add(new_student)
+
+    # Add course enrollment for the student
+    new_enrollment = Enrollment(
+        student=new_student,
+        course_id=data['course_id'],
+        # enrolled_at=datetime.utcnow()
+    )
+    db.session.add(new_enrollment)
+
     db.session.commit()
-    return jsonify({"message": "Student added successfully", "student": new_student.to_dict()}), 201
+
+    # Manually serialize the student data
+    student_data = {
+        "id": new_student.id,
+        "user_id": new_student.user_id,
+        "first_name": new_student.user.first_name,
+        "last_name": new_student.user.last_name,
+        "email": new_student.user.email,
+        "phase": new_student.phase,
+        "total_fee": float(new_student.total_fee),
+        "amount_paid": float(new_student.amount_paid),
+        "status": new_student.status,
+        "created_at": new_student.created_at.isoformat(),
+        "updated_at": new_student.updated_at.isoformat(),
+        "course": {
+            "course_id": new_enrollment.course_id,
+            "enrolled_at": new_enrollment.enrolled_at.isoformat()
+        }
+    }
+
+    return jsonify({"message": "Student added successfully", "student": student_data}), 201
 
 # Admin: Update student details
 @app.route('/students/<int:student_id>', methods=['PATCH'])
@@ -300,9 +371,28 @@ def get_students():
     admin_check = admin_required()
     if admin_check:
         return admin_check
-    
+
     students = Student.query.all()
-    return jsonify([student.to_dict() for student in students]), 200
+
+    # Manually serialize student data
+    serialized_students = []
+    for student in students:
+        serialized_students.append({
+            "id": student.id,
+            "user_id": student.user_id,
+            "first_name": student.user.first_name,
+            "last_name": student.user.last_name,
+            "email": student.user.email,
+            "phase": student.phase,
+            "total_fee": float(student.total_fee),
+            "amount_paid": float(student.amount_paid),
+            "fee_balance": student.fee_balance,
+            "status": student.status,
+            "created_at": student.created_at.isoformat(),
+            "updated_at": student.updated_at.isoformat()
+        })
+
+    return jsonify(serialized_students), 200
 
 # Admin: Deactivate student account
 @app.route('/students/<int:student_id>/deactivate', methods=['PATCH'])
@@ -345,7 +435,7 @@ def add_grade(enrollment_id):
     new_grade = Grade(
         enrollment_id=enrollment_id,
         grade=data['grade'],
-        created_at=datetime.utcnow()
+        created_at = datetime.utcnow()
     )
     db.session.add(new_grade)
     db.session.commit()
@@ -381,6 +471,35 @@ def delete_grade(grade_id):
     db.session.commit()
     return jsonify({"message": "Grade deleted successfully"}), 200
 
+# Admin: Delete user
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({"message": "User deleted successfully"}), 200
+
+# Admin: Delete student
+@app.route('/students/<int:student_id>', methods=['DELETE'])
+@jwt_required()
+def delete_student(student_id):
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+
+    student = Student.query.get_or_404(student_id)
+    db.session.delete(student)
+    db.session.commit()
+
+    return jsonify({"message": "Student deleted successfully"}), 200
 
 # Student: Get grades
 @app.route('/students/<int:student_id>/grades', methods=['GET'])
@@ -441,7 +560,7 @@ def make_payment(student_id):
     new_payment = Payment(
         student_id=student_id,
         amount=data['amount'],
-        payment_date=datetime.utcnow(),
+        # payment_date = datetime.utcnow(),
         payment_method=data['payment_method'],
         transaction_id=data['transaction_id']
     )
