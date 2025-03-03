@@ -251,7 +251,7 @@ def add_student():
     data = request.get_json()
 
     if 'user_id' in data:
-        # Scenario 1: Adding student using existing user_id
+        #Adding student using existing user_id
         new_student = Student(
             user_id=data['user_id'],
             phase=data['phase'],
@@ -260,7 +260,7 @@ def add_student():
             status=data['status']
         )
     else:
-        # Scenario 2: Creating a new user and adding student
+        #Creating a new user and adding student
         new_user = User(
             first_name=data['first_name'],
             last_name=data['last_name'],
@@ -276,7 +276,7 @@ def add_student():
             amount_paid=data['amount_paid'],
             status=data['status']
         )
-        db.session.add(new_user)  # Add new user to session first
+        db.session.add(new_user)  
 
     db.session.add(new_student)
 
@@ -438,6 +438,22 @@ def delete_grade(grade_id):
     db.session.delete(grade)
     db.session.commit()
     return jsonify({"message": "Grade deleted successfully"}), 200
+
+# Admin: Delete student
+@app.route('/students/<int:student_id>', methods=['DELETE'])
+@jwt_required()
+def delete_student(student_id):
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+
+    student = Student.query.get_or_404(student_id)
+    db.session.delete(student)
+    db.session.commit()
+
+    return jsonify({"message": "Student deleted successfully"}), 200
+
 
 
 # Student: Get grades
