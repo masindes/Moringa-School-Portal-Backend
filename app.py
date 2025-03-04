@@ -26,6 +26,7 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KE")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600 
 
+
 # M-Pesa API credentials
 CONSUMER_KEY = "RgXJq5gNAcVfObTMmXVAvOIcV28bsvCh3dqUVJuG7pSzAR0x"
 CONSUMER_SECRET = "npzeXWjsTqPVcQoeGGmGUvBPUxG4lZiyHGYaGJ94yseYOgwrAn9gSemZ4RKKJqGa"
@@ -33,23 +34,18 @@ SHORTCODE = "174379"
 PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
 CALLBACK_URL = "https://moringa-school-portal-backend.onrender.com/mpesa/callback"
 
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000"]}}, supports_credentials=True)
-bcrypt.init_app(app)
-db.init_app(app)
+CORS(app)
+bcrypt = Bcrypt(app)
+db = SQLAlchemy(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
-
-
 
 # Generate M-Pesa access token
 def generate_access_token():
     url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
     response = requests.get(url, auth=HTTPBasicAuth(CONSUMER_KEY, CONSUMER_SECRET))
     token_data = response.json()
-    
-    # Debugging: Log the token response
     print("Access Token Response:", token_data)
-
     return token_data.get("access_token")
 
 # Generate Lipa Na M-Pesa password
@@ -84,33 +80,107 @@ def stk_push(phone_number, amount, account_reference, transaction_desc):
     }
     
     response = requests.post(url, json=payload, headers=headers)
-    
-    # Debugging: Log the STK Push response
     print("STK Push Response:", response.json())
-
     return response.json()
 
 # Payment route
 @app.route("/mpesa/payment", methods=["POST"])
 def initiate_payment():
     data = request.json
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
     phone_number = data.get("phone_number")
     amount = data.get("amount")
-    account_reference = "MoringaPortal"
-    transaction_desc = "Student Payment"
+
+    if not first_name or not last_name or not phone_number or not amount:
+        return jsonify({"error": "First name, last name, phone number, and amount are required"}), 400
+
+    # Find student by first and last name
+    user = User.query.filter_by(first_name=first_name, last_name=last_name).first()
+    if not user or not user.student:
+        return jsonify({"error": "Student not found"}), 404
+
+    student = user.student  # Get related Student record
+
+    # Initiate payment request
+    response = stk_push(phone_number, amount, "MoringaPortal", "Student Payment")
     
-    if not phone_number or not amount:
-        return jsonify({"error": "Phone number and amount are required"}), 400
-    
-    response = stk_push(phone_number, amount, account_reference, transaction_desc)
-    return jsonify(response)
+    if response.get("ResponseCode") == "0":
+        transaction_id = response.get("CheckoutRequestID")
+
+        # Create a new payment record
+        payment = Payment(
+            student_id=student.id,
+            amount=amount,
+            payment_date=datetime.datetime.utcnow(),
+            payment_method="M-Pesa",
+            transaction_id=transaction_id
+        )
+        
+        # Update student's amount paid and fee balance
+        student.amount_paid += amount
+        student.fee_balance = student.total_fee - student.amount_paid
+
+        # Create a notification
+        notification_message = f"Payment of {amount} KES received successfully. Your new balance is {student.fee_balance}."
+        notification = Notification(
+            user_id=user.id,
+            message=notification_message,
+            created_at=datetime.datetime.utcnow()
+        )
+
+        # Commit changes
+        db.session.add(payment)
+        db.session.add(notification)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Payment request sent successfully!",
+            "notification": notification_message,
+            "transaction_id": transaction_id,
+            "student": {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "total_fee": float(student.total_fee),
+                "amount_paid": float(student.amount_paid),
+                "fee_balance": float(student.fee_balance),
+            }
+        }), 201
+    else:
+        return jsonify({"error": "Payment request failed", "details": response}), 400
 
 # Callback route to process payment response
 @app.route("/mpesa/callback", methods=["POST"])
 def mpesa_callback():
     data = request.json
     print("M-Pesa Callback Data:", data)
-    return jsonify({"message": "Callback received"}), 200
+
+    try:
+        result_code = data["Body"]["stkCallback"]["ResultCode"]
+        if result_code == 0:
+            transaction_id = data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][1]["Value"]
+            amount = data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][0]["Value"]
+            phone_number = data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][4]["Value"]
+
+            # Find the payment record
+            payment = Payment.query.filter_by(transaction_id=transaction_id).first()
+            if payment:
+                payment.status = "Completed"
+                db.session.commit()
+
+                return jsonify({
+                    "message": "Payment successful",
+                    "transaction_id": transaction_id,
+                    "amount": amount,
+                    "phone_number": phone_number
+                }), 200
+            else:
+                return jsonify({"error": "Payment record not found"}), 404
+        else:
+            return jsonify({"error": "Payment failed"}), 400
+    except KeyError:
+        return jsonify({"error": "Invalid callback data"}), 400
+
 
 
 # check if the current user is an admin
