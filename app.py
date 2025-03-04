@@ -105,7 +105,7 @@ def initiate_payment():
     response = stk_push(phone_number, amount, account_reference, transaction_desc)
     return jsonify(response)
 
-# Callback route to process payment response
+# 
 @app.route("/mpesa/callback", methods=["POST"])
 def mpesa_callback():
     data = request.json
