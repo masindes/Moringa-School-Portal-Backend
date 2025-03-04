@@ -26,7 +26,6 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KE")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600 
 
-
 # M-Pesa API credentials
 CONSUMER_KEY = "RgXJq5gNAcVfObTMmXVAvOIcV28bsvCh3dqUVJuG7pSzAR0x"
 CONSUMER_SECRET = "npzeXWjsTqPVcQoeGGmGUvBPUxG4lZiyHGYaGJ94yseYOgwrAn9gSemZ4RKKJqGa"
@@ -111,25 +110,7 @@ def initiate_payment():
 def mpesa_callback():
     data = request.json
     print("M-Pesa Callback Data:", data)
-
-    # Extract relevant fields from M-Pesa response
-    try:
-        result_code = data["Body"]["stkCallback"]["ResultCode"]
-        if result_code == 0:
-            transaction_id = data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][1]["Value"]
-            amount = data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][0]["Value"]
-            phone_number = data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][4]["Value"]
-            
-            # Process the payment in the database (Example)
-            # new_payment = Payment(student_id=some_student_id, amount=amount, transaction_id=transaction_id, status="Completed")
-            # db.session.add(new_payment)
-            # db.session.commit()
-
-            return jsonify({"message": "Payment successful", "transaction_id": transaction_id, "amount": amount, "phone_number": phone_number}), 200
-        else:
-            return jsonify({"error": "Payment failed"}), 400
-    except KeyError:
-        return jsonify({"error": "Invalid callback data"}), 400
+    return jsonify({"message": "Callback received"}), 200
 
 
 # check if the current user is an admin
