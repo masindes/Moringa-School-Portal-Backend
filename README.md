@@ -163,6 +163,11 @@ This project is licensed under the MIT License. See the LICENSE file for details
 Moringa School for the inspiration.
 
 Flask and the Python community for the tools and libraries used in this project.
+# Contributors
+LouisOgwal
+Nympha Pamba
+Stephen Waithumbi
+Masinde Sylvester
 
 # Contact
-For any questions or issues, please contact yienlouis470@gmail.com.
+For any questions or issues, please contact yienlouis470@gmail.com,
