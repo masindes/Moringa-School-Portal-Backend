@@ -21,3 +21,21 @@ Reports: Admins can generate and view reports on student attendance and performa
 
 Chat Messaging: Users can send and receive messages within the portal.
 
+# Technologies Used
+
+Backend: Flask (Python)
+
+Database: PostgreSQL
+
+Authentication: JWT (JSON Web Tokens)
+
+Password Hashing: Flask-Bcrypt
+
+Payment Integration: M-Pesa API
+
+Email Notifications: Flask-Mail
+
+API Documentation: Swagger (via Flask-RESTful)
+
+Frontend: (Not included in this repository, but can be integrated with any frontend framework like React or Angular)
+
