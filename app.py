@@ -33,7 +33,7 @@ SHORTCODE = "174379"
 PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
 CALLBACK_URL = "https://moringa-school-portal-backend.onrender.com/mpesa/callback"
 
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000"]}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, supports_credentials=True)
 bcrypt.init_app(app)
 db.init_app(app)
 jwt = JWTManager(app)
