@@ -101,3 +101,61 @@ flask run
 Access the application:
 The application will be running at http://127.0.0.1:5000/.
 
+# API EndpointsAuthentication
+POST /register: Register a new user.
+
+POST /login: Log in and receive a JWT token.
+
+POST /logout: Log out and invalidate the JWT token.
+
+Password Reset
+POST /request_password_reset: Request a password reset OTP.
+
+POST /reset_password: Reset password using the OTP.
+
+Student Management
+GET /students: Get all students (Admin only).
+
+POST /students: Add a new student (Admin only).
+
+PATCH /students/int:student_id: Update student details (Admin only).
+
+DELETE /students/int:student_id: Delete a student (Admin only).
+
+Course Management
+GET /courses: Get all courses.
+
+POST /courses: Add a new course (Admin only).
+
+Grade Management
+POST /enrollments/int:enrollment_id/grades: Add a grade for a student (Admin only).
+
+PATCH /grades/int:grade_id: Update a grade (Admin only).
+
+DELETE /grades/int:grade_id: Delete a grade (Admin only).
+
+Payment Management
+POST /mpesa/payment: Initiate an M-Pesa payment.
+
+POST /mpesa/callback: M-Pesa payment callback (used internally).
+
+Notifications
+GET /notifications/int:user_id: Get notifications for a user.
+
+Reports
+GET /reports: Get all reports (Admin only).
+
+Chat Messaging
+POST /chat: Send a chat message.
+
+GET /chat/int:user_id: Get chat messages for a user.
+
+Configuration
+The application can be configured for different environments (development, production) by setting the appropriate environment variables in the .env file.
+
+Contributing
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
+
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
+
