@@ -87,3 +87,17 @@ MAIL_USE_TLS=True
 MAIL_USERNAME=your_email@example.com
 MAIL_PASSWORD=your_email_password
 
+# Initialize the database:
+
+flask db init
+flask db migrate
+flask db upgrade
+Seed the database with sample data:
+python seed.py
+
+# Run the application:
+
+flask run
+Access the application:
+The application will be running at http://127.0.0.1:5000/.
+
