@@ -416,6 +416,47 @@ def update_student(student_id):
 
     return jsonify({"message": "Student updated successfully", "student": student_data}), 200
 
+# Admin: Add a new course
+@app.route('/courses', methods=['POST'])
+@jwt_required()
+def add_course():
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+    
+    data = request.get_json()
+    new_course = Course(
+        name=data['name'],
+        description=data.get('description', '')
+    )
+    db.session.add(new_course)
+    db.session.commit()
+
+    return jsonify({"message": "Course added successfully", "course": new_course.to_dict()}), 201
+
+
+# Admin: Update course details
+@app.route('/courses/<int:course_id>', methods=['PATCH'])
+@jwt_required()
+def update_course(course_id):
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+
+    course = Course.query.get_or_404(course_id)
+    data = request.get_json()
+    
+    if 'name' in data:
+        course.name = data['name']
+    if 'description' in data:
+        course.description = data['description']
+    
+    db.session.commit()
+
+    return jsonify({"message": "Course updated successfully", "course": course.to_dict()}), 200
+
 
 # Admin: View all students
 @app.route('/students', methods=['GET'])
