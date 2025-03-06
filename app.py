@@ -654,7 +654,7 @@ def make_payment(student_id):
     db.session.add(new_payment)
     db.session.commit()
     
-    return jsonify({"message": "Payment made successfully"), 201
+    return jsonify({"message": "Payment made successfully", "payment": new_payment.to_dict()}), 201
 
 
     # Student: Get all details
