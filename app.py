@@ -433,7 +433,7 @@ def add_course():
     db.session.add(new_course)
     db.session.commit()
 
-    return jsonify({"message": "Course added successfully", "course": new_course.to_dict()}), 201
+    return jsonify({"message": "Course added successfully"}), 201
 
 
 # Admin: Update course details
@@ -455,7 +455,7 @@ def update_course(course_id):
     
     db.session.commit()
 
-    return jsonify({"message": "Course updated successfully", "course": course.to_dict()}), 200
+    return jsonify({"message": "Course updated successfully"}), 200
 
 
 # Admin: View all students
