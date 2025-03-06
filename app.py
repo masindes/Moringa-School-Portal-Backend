@@ -650,17 +650,27 @@ def get_grades(student_id):
     return jsonify(grades), 200
 
 # Student: Get fee balance
-@app.route('/students/<int:student_id>/fee_balance', methods=['GET'])
+@app.route('/student/fee_balance', methods=['GET'])
 @jwt_required()
-def get_fee_balance(student_id):
+def get_fee_balance():
+    # Get the current user's ID from the JWT token
+    current_user_id = int(get_jwt_identity())
 
     # Check if student account is active
-    active_check = student_active_required(student_id)
+    active_check = student_active_required(current_user_id)
     if active_check:
         return active_check
-    
-    student = Student.query.get_or_404(student_id)
-    return jsonify({"fee_balance": student.fee_balance}), 200
+
+    student = Student.query.filter_by(user_id=current_user_id).first_or_404()
+
+    fee_data = {
+        "studentName": f"{student.user.first_name} {student.user.last_name}",
+        "totalFees": float(student.total_fee),
+        "paidAmount": float(student.amount_paid),
+        "outstandingAmount": float(student.total_fee - student.amount_paid)
+    }
+
+    return jsonify(fee_data), 200
 
 # Student: Get current phase
 @app.route('/students/<int:student_id>/current_phase', methods=['GET'])
