@@ -297,7 +297,7 @@ def add_student():
     new_enrollment = Enrollment(
         student=new_student,
         course_id=data['course_id'],
-        # enrolled_at=datetime.utcnow()
+        
     )
     db.session.add(new_enrollment)
 
@@ -431,6 +431,11 @@ def get_students():
     # Manually serialize student data
     serialized_students = []
     for student in students:
+        course_name = None
+        if student.enrollments:
+            # Assuming each student has one enrollment
+            course_name = student.enrollments[0].course.name
+
         serialized_students.append({
             "id": student.id,
             "user_id": student.user_id,
@@ -442,6 +447,7 @@ def get_students():
             "amount_paid": float(student.amount_paid),
             "fee_balance": student.fee_balance,
             "status": student.status,
+            "course_name": course_name, 
             "created_at": student.created_at.isoformat(),
             "updated_at": student.updated_at.isoformat()
         })
