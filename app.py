@@ -672,6 +672,7 @@ def get_fee_balance():
 
     return jsonify(fee_data), 200
 
+
 # Student: Get current phase
 @app.route('/students/<int:student_id>/current_phase', methods=['GET'])
 @jwt_required()
