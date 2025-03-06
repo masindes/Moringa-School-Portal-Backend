@@ -518,11 +518,11 @@ def add_grade(enrollment_id):
     new_grade = Grade(
         enrollment_id=enrollment_id,
         grade=data['grade'],
-        created_at = datetime.utcnow()
+        # created_at = datetime.utcnow()
     )
     db.session.add(new_grade)
     db.session.commit()
-    return jsonify({"message": "Grade added successfully", "grade": new_grade.to_dict()}), 201
+    return jsonify({"message": "Grade added successfully" }), 201
 
 # Update an existing grade
 @app.route('/grades/<int:grade_id>', methods=['PATCH'])
@@ -654,7 +654,7 @@ def make_payment(student_id):
     db.session.add(new_payment)
     db.session.commit()
     
-    return jsonify({"message": "Payment made successfully", "payment": new_payment.to_dict()}), 201
+    return jsonify({"message": "Payment made successfully"), 201
 
 
     # Student: Get all details
