@@ -653,12 +653,13 @@ def get_grades(student_id):
 @app.route('/student/fee_balance', methods=['GET'])
 @jwt_required()
 def get_fee_balance():
-    # Get the current user's ID from the JWT token
     current_user_id = int(get_jwt_identity())
+    print(f"Current User ID: {current_user_id}")  # Debugging: Log user ID
 
     # Check if student account is active
     active_check = student_active_required(current_user_id)
     if active_check:
+        print(f"Account status check failed for user ID: {current_user_id}")  # Debugging: Log status check failure
         return active_check
 
     student = Student.query.filter_by(user_id=current_user_id).first_or_404()
@@ -669,6 +670,8 @@ def get_fee_balance():
         "paidAmount": float(student.amount_paid),
         "outstandingAmount": float(student.total_fee - student.amount_paid)
     }
+
+    print(f"Fee data retrieved for user ID: {current_user_id}")  # Debugging: Log successful data retrieval
 
     return jsonify(fee_data), 200
 
