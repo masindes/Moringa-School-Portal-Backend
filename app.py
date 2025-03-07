@@ -297,7 +297,7 @@ def add_student():
     new_enrollment = Enrollment(
         student=new_student,
         course_id=data['course_id'],
-        # enrolled_at=datetime.utcnow()
+        
     )
     db.session.add(new_enrollment)
 
@@ -335,14 +335,128 @@ def update_student(student_id):
 
     student = Student.query.get_or_404(student_id)
     data = request.get_json()
+    
+    # Update student details
+    if 'first_name' in data:
+        student.user.first_name = data['first_name']
+    if 'last_name' in data:
+        student.user.last_name = data['last_name']
+    if 'email' in data:
+        student.user.email = data['email']
     if 'phase' in data:
         student.phase = data['phase']
-    if 'fee_balance' in data:
-        student.fee_balance = data['fee_balance']
+    if 'total_fee' in data:
+        student.total_fee = data['total_fee']
+    if 'amount_paid' in data:
+        student.amount_paid = data['amount_paid']
     if 'status' in data:
         student.status = data['status']
+
+    # Update course and grade details if provided
+    if 'course_id' in data:
+        # Update the course enrollment
+        enrollment = Enrollment.query.filter_by(student_id=student.id).first()
+        if enrollment:
+            enrollment.course_id = data['course_id']
+        else:
+            new_enrollment = Enrollment(
+                student=student,
+                course_id=data['course_id'],
+                # enrolled_at=datetime.utcnow()
+            )
+            db.session.add(new_enrollment)
+
+    if 'grade' in data:
+        enrollment_id = data.get('enrollment_id')  # Ensure enrollment_id is provided
+        if enrollment_id:
+            grade = Grade.query.filter_by(enrollment_id=enrollment_id).first()
+            if grade:
+                grade.grade = data['grade']
+            else:
+                new_grade = Grade(
+                    enrollment_id=enrollment_id,
+                    grade=data['grade'],
+                    # created_at=datetime.utcnow()
+                )
+                db.session.add(new_grade)
+        else:
+            return jsonify({"message": "Enrollment ID is required to update the grade"}), 400
+
     db.session.commit()
-    return jsonify({"message": "Student updated successfully", "student": student.to_dict()}), 200
+
+    # Manually serialize student data
+    student_data = {
+        "id": student.id,
+        "user_id": student.user_id,
+        "first_name": student.user.first_name,
+        "last_name": student.user.last_name,
+        "email": student.user.email,
+        "phase": student.phase,
+        "total_fee": float(student.total_fee),
+        "amount_paid": float(student.amount_paid),
+        "fee_balance": student.fee_balance,
+        "status": student.status,
+        "created_at": student.created_at.isoformat(),
+        "updated_at": student.updated_at.isoformat(),
+    }
+
+    # Add course and grade to the serialized student data if available
+    if 'course_id' in data:
+        student_data["course"] = {
+            "course_id": enrollment.course_id,
+            "enrolled_at": enrollment.enrolled_at.isoformat()
+        }
+
+    if 'grade' in data and enrollment_id:
+        student_data["grade"] = {
+            "enrollment_id": enrollment_id,
+            "grade": grade.grade if grade else new_grade.grade,
+            "created_at": grade.created_at.isoformat() if grade else new_grade.created_at.isoformat()
+        }
+
+    return jsonify({"message": "Student updated successfully", "student": student_data}), 200
+
+# Admin: Add a new course
+@app.route('/courses', methods=['POST'])
+@jwt_required()
+def add_course():
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+    
+    data = request.get_json()
+    new_course = Course(
+        name=data['name'],
+        description=data.get('description', '')
+    )
+    db.session.add(new_course)
+    db.session.commit()
+
+    return jsonify({"message": "Course added successfully"}), 201
+
+
+# Admin: Update course details
+@app.route('/courses/<int:course_id>', methods=['PATCH'])
+@jwt_required()
+def update_course(course_id):
+    # Check for admin role
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+
+    course = Course.query.get_or_404(course_id)
+    data = request.get_json()
+    
+    if 'name' in data:
+        course.name = data['name']
+    if 'description' in data:
+        course.description = data['description']
+    
+    db.session.commit()
+
+    return jsonify({"message": "Course updated successfully"}), 200
+
 
 # Admin: View all students
 @app.route('/students', methods=['GET'])
@@ -358,6 +472,11 @@ def get_students():
     # Manually serialize student data
     serialized_students = []
     for student in students:
+        course_name = None
+        if student.enrollments:
+            # Assuming each student has one enrollment
+            course_name = student.enrollments[0].course.name
+
         serialized_students.append({
             "id": student.id,
             "user_id": student.user_id,
@@ -369,6 +488,7 @@ def get_students():
             "amount_paid": float(student.amount_paid),
             "fee_balance": student.fee_balance,
             "status": student.status,
+            "course_name": course_name, 
             "created_at": student.created_at.isoformat(),
             "updated_at": student.updated_at.isoformat()
         })
@@ -445,11 +565,11 @@ def add_grade(enrollment_id):
     new_grade = Grade(
         enrollment_id=enrollment_id,
         grade=data['grade'],
-        created_at = datetime.utcnow()
+        # created_at = datetime.utcnow()
     )
     db.session.add(new_grade)
     db.session.commit()
-    return jsonify({"message": "Grade added successfully", "grade": new_grade.to_dict()}), 201
+    return jsonify({"message": "Grade added successfully" }), 201
 
 # Update an existing grade
 @app.route('/grades/<int:grade_id>', methods=['PATCH'])
@@ -530,17 +650,31 @@ def get_grades(student_id):
     return jsonify(grades), 200
 
 # Student: Get fee balance
-@app.route('/students/<int:student_id>/fee_balance', methods=['GET'])
+@app.route('/student/fee_balance', methods=['GET'])
 @jwt_required()
-def get_fee_balance(student_id):
+def get_fee_balance():
+    current_user_id = int(get_jwt_identity())
+    print(f"Current User ID: {current_user_id}")  # Debugging: Log user ID
 
     # Check if student account is active
-    active_check = student_active_required(student_id)
+    active_check = student_active_required(current_user_id)
     if active_check:
+        print(f"Account status check failed for user ID: {current_user_id}")  # Debugging: Log status check failure
         return active_check
-    
-    student = Student.query.get_or_404(student_id)
-    return jsonify({"fee_balance": student.fee_balance}), 200
+
+    student = Student.query.filter_by(user_id=current_user_id).first_or_404()
+
+    fee_data = {
+        "studentName": f"{student.user.first_name} {student.user.last_name}",
+        "totalFees": float(student.total_fee),
+        "paidAmount": float(student.amount_paid),
+        "outstandingAmount": float(student.total_fee - student.amount_paid)
+    }
+
+    print(f"Fee data retrieved for user ID: {current_user_id}")  # Debugging: Log successful data retrieval
+
+    return jsonify(fee_data), 200
+
 
 # Student: Get current phase
 @app.route('/students/<int:student_id>/current_phase', methods=['GET'])
