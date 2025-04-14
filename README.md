@@ -165,8 +165,11 @@ Moringa School for the inspiration.
 Flask and the Python community for the tools and libraries used in this project.
 # Contributors
 LouisOgwal
+
 Nympha Pamba
+
 Stephen Waithumbi
+
 Masinde Sylvester
 
 # Contact
