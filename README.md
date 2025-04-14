@@ -63,7 +63,7 @@ dotenv for environment variable management
 Steps
 Clone the repository:
 
-git clone https://github.com/yourusername/moringa-school-portal.git
+git clone git@github.com:masindes/Task_Managent_Backend.git
 cd moringa-school-portal
 Set up a virtual environment:
 
