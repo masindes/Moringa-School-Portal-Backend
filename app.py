@@ -711,7 +711,6 @@ def make_payment(student_id):
     
     # Update student's amount_paid
     student.amount_paid += data['amount']
-    
     db.session.add(new_payment)
     db.session.commit()
     
