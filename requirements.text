@@ -198,7 +198,7 @@ six==1.16.0
 sklearn-crfsuite==0.3.6
 skops==0.9.0
 slack_sdk==3.34.0
-SQLAlchemy==1.4.54
+SQLAlchemy==2.0.25
 SQLAlchemy-serializer==1.4.12
 stack-data==0.6.3
 structlog==23.3.0
