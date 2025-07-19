@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: Moringa
+    runtime: python-3.12.4
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
