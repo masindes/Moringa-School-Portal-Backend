@@ -3,7 +3,7 @@ import os
 from flask import Flask, request, jsonify, make_response
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-# from flask_cors import CORS
+from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt, decode_token
 from models import db, bcrypt, User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage, TokenBlocklist
@@ -33,7 +33,7 @@ SHORTCODE = "174379"
 PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
 CALLBACK_URL = "https://moringa-school-portal-backend.onrender.com/mpesa/callback"
 
-# CORS(app)
+CORS(app)
 bcrypt.init_app(app)
 db.init_app(app)
 jwt = JWTManager(app)
