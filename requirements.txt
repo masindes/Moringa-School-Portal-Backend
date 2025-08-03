@@ -1,3 +1,6 @@
+setuptools>=68.0.0
+wheel
+python3-distutils
 absl-py==1.4.0
 aio-pika==8.2.3
 aiofiles==24.1.0
@@ -242,4 +245,4 @@ xattr==1.2.0
 xyzservices==2025.1.0
 yarl==1.15.2
 zipp==3.20.2
-python3-distutils
+
