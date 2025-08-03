@@ -242,3 +242,4 @@ xattr==1.2.0
 xyzservices==2025.1.0
 yarl==1.15.2
 zipp==3.20.2
+python3-distutils
