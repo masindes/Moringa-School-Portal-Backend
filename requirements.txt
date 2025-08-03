@@ -1,6 +1,6 @@
 setuptools>=68.0.0
 wheel
-python3-distutils
+Distutils2==1.0a4
 absl-py==1.4.0
 aio-pika==8.2.3
 aiofiles==24.1.0
