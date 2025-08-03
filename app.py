@@ -20,7 +20,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://moringa_school_portal_db_user:aiA8b41Ed27WuM47JLtr5QfmJHuHvpUn@dpg-cv0cdidds78s73edtos0-a.oregon-postgres.render.com/moringa_school_portal_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:BbICeEziwDryEXXZjnknpagcJUxUSkwx@switchyard.proxy.rlwy.net:21529/railway"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KE")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
