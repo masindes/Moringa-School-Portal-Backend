@@ -9,7 +9,6 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from models import db, bcrypt, User, Student, Course, Enrollment, Grade, Payment, Notification, Report, ChatMessage, TokenBlocklist
 from datetime import datetime
 import requests
-import datetime
 import base64
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
@@ -20,7 +19,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:BbICeEziwDryEXXZjnknpagcJUxUSkwx@switchyard.proxy.rlwy.net:21529/railway"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///portal.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KE")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
@@ -33,7 +32,7 @@ SHORTCODE = "174379"
 PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
 CALLBACK_URL = "https://moringa-school-portal-backend.onrender.com/mpesa/callback"
 
-CORS(app)
+CORS(app, origins="*", supports_credentials=True)
 bcrypt.init_app(app)
 db.init_app(app)
 jwt = JWTManager(app)
@@ -173,7 +172,9 @@ def login():
     if user and user.check_password(data['password']):
         identity = str(user.id) 
         access_token = create_access_token(identity=identity, additional_claims={"role": user.role})
-        return jsonify({"message": "Logged in successfully", "access_token": access_token, "role": user.role}), 200
+        student = Student.query.filter_by(user_id=user.id).first()
+        student_id = student.id if student else None
+        return jsonify({"message": "Logged in successfully", "access_token": access_token, "role": user.role, "user_id": user.id, "student_id": student_id}), 200
     return jsonify({"message": "Invalid email or password"}), 401
 
 # Logout route to add the token to the blacklist
@@ -778,7 +779,76 @@ def get_payments():
 @app.route('/notifications/<int:user_id>', methods=['GET'])
 @jwt_required()
 def get_notifications(user_id):
-    notifications = Notification.query.filter_by(user_id=user_id).all()
+    notifications = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).all()
+    return jsonify([notification.to_dict() for notification in notifications]), 200
+
+# Notifications: Admin sends a notification
+@app.route('/notifications', methods=['POST'])
+@jwt_required()
+def send_notification():
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+    data = request.get_json()
+    user_ids = data.get('user_ids', [])
+    message = data.get('message', '').strip()
+    if not message:
+        return jsonify({"message": "Message is required"}), 400
+    if not user_ids:
+        users = User.query.filter_by(role='student').all()
+        user_ids = [u.id for u in users]
+    created = []
+    for uid in user_ids:
+        n = Notification(user_id=uid, message=message, status='unread', created_at=datetime.utcnow())
+        db.session.add(n)
+        created.append(uid)
+    db.session.commit()
+    return jsonify({"message": f"Notification sent to {len(created)} user(s)"}), 201
+
+# Notifications: Mark as read
+@app.route('/notifications/<int:notification_id>/read', methods=['PATCH'])
+@jwt_required()
+def mark_notification_read(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    notification.status = 'read'
+    db.session.commit()
+    return jsonify({"message": "Marked as read"}), 200
+
+# Courses: List all
+@app.route('/courses', methods=['GET'])
+@jwt_required()
+def get_courses():
+    courses = Course.query.all()
+    return jsonify([{"id": c.id, "name": c.name, "description": c.description} for c in courses]), 200
+
+# Admin: Stats summary
+@app.route('/admin/stats', methods=['GET'])
+@jwt_required()
+def admin_stats():
+    admin_check = admin_required()
+    if admin_check:
+        return admin_check
+    total_students = Student.query.count()
+    active_students = Student.query.filter_by(status='active').count()
+    inactive_students = Student.query.filter_by(status='inactive').count()
+    total_payments = db.session.query(db.func.sum(Payment.amount)).scalar() or 0
+    total_courses = Course.query.count()
+    unread_notifications = Notification.query.filter_by(status='unread').count()
+    return jsonify({
+        "total_students": total_students,
+        "active_students": active_students,
+        "inactive_students": inactive_students,
+        "total_payments": float(total_payments),
+        "total_courses": total_courses,
+        "unread_notifications": unread_notifications
+    }), 200
+
+# Student: Get my notifications (via JWT identity)
+@app.route('/my/notifications', methods=['GET'])
+@jwt_required()
+def get_my_notifications():
+    user_id = int(get_jwt_identity())
+    notifications = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).all()
     return jsonify([notification.to_dict() for notification in notifications]), 200
 
 if __name__ == '__main__':

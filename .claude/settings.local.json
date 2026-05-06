@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /Users/mac/node_modules/vite/dist/node/chunks/ 2>/dev/null | head -20)",
+      "Read(//Users/mac/node_modules/vite/dist/node/chunks/**)",
+      "Bash(venv/bin/pip install *)",
+      "Bash(pyenv versions *)",
+      "Bash(ls /Users/mac/.local/share/virtualenvs/Moringa-School-Portal-Backend-wgCfKgHY/lib/python3.12/site-packages/ | grep -i flask)",
+      "Read(//Users/mac/.local/share/virtualenvs/Moringa-School-Portal-Backend-wgCfKgHY/lib/python3.12/site-packages/**)"
+    ]
+  }
+}
